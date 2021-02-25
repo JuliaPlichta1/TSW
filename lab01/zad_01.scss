@@ -1,0 +1,66 @@
+$color_yellow: yellow;
+$color_red: red;
+.C {
+  position: relative;
+  top: 0px;
+  width: 250px;
+  height: 20px;
+  border: 5px solid $color_red;
+  padding: 15px;
+  background-color: $color_yellow;
+  .A {
+    position: relative;
+    left: 0px;
+    bottom: 10px;
+    .A {
+        position: relative;
+        left: 25px;
+        bottom: 10px;
+        .A {
+            position: relative;
+            left: 20px;
+            bottom: 10px;
+            .B {
+                position: relative;
+                left: 25px;
+                bottom: 25px;
+                .B {
+                    position: relative;
+                    left: 25px;
+                    bottom: 25px;
+                    .B {
+                        position: relative;
+                        left: 30px;
+                        bottom: 25px;
+                        .A {
+                            position: relative;
+                            left: 25px;
+                            bottom: 10px;
+                            .A {
+                                position: relative;
+                                left: 20px;
+                                bottom: 10px;
+                                .A {
+                                    position: relative;
+                                    left: 25px;
+                                    bottom: 10px;
+                                    .B {
+                                        position: relative;
+                                        left: 25px;
+                                        bottom: 25px;
+                                        .B {
+                                            position: relative;
+                                            left: 20px;
+                                            bottom: 25px;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                      }
+                  }
+              }
+        }
+    }
+  }
+}
