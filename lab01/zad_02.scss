@@ -1,0 +1,27 @@
+$color_blue: blue;
+$color_red: red;
+$color_lightblue: rgb(240, 240, 255);
+$color_lightred: rgb(255, 228, 228);
+@mixin border_bgcolor($bordercolor, $bgcolor) {
+    border: 5px solid $bordercolor;
+    background-color: $bgcolor;
+}
+
+div {
+    position: absolute;
+    width: 19%;
+    height: 19%;
+    text-align: center;
+}
+
+.A {
+    top: 36%;
+    left: 34%;
+    @include border_bgcolor($color_blue, $color_lightblue);
+}
+
+.B {
+    bottom: 36%;
+    right: 34%;
+    @include border_bgcolor($color_red, $color_lightred);
+}
