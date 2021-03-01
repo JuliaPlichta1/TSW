@@ -1,0 +1,26 @@
+html, body {
+    height: 100%;
+}
+#outer {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    
+    .box {
+        width: 100px;
+        height: 100px;
+        text-align: center;
+        padding: 5px;
+        color: white;
+        background-color: lightgray;
+        +div.box {
+            background-color: gray;
+            +div.box {
+                background-color: rgba(128, 128, 128, 0.658);
+            }
+        }
+        
+    }
+}

@@ -1,0 +1,51 @@
+body {
+    margin: 0;
+}
+
+header {
+    background-color: grey;
+    padding: 15px 0;
+}
+
+h1 {
+    text-align: center;
+    color: white;
+}
+
+article {
+    padding: 10px;
+    margin: 15px;
+    background-color: lightgray;
+}
+
+nav {
+    background-color: rgb(223, 224, 247);
+}
+
+ul {
+    list-style-type: none;
+    display: flex;
+    justify-content: center;
+    padding: 15px;
+
+    li {
+        width: 140px;
+        height: 40px;
+        margin-left: 10px;
+        margin-right: 10px;
+        background-color: rgb(198, 197, 245);
+        box-shadow:2px 2px 5px grey; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+section {
+    display: flex;
+    flex-wrap: wrap;
+
+    article {
+        flex: 200px;
+    }
+}
