@@ -1,0 +1,38 @@
+$bgcolor: rgb(254, 255, 244);
+
+html, body {
+    height: 100%;
+    font-size: large;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-auto-rows: 115px 460px 115px;
+    gap: 12px;
+    margin-left: 10%;
+    margin-right: 10%;
+    > * {
+        padding: 12px;
+        border: 1px solid black;
+        background-color: $bgcolor;
+    }
+}
+
+header {
+    grid-area: 1 / 1 / 2 / 4;
+}
+
+footer {
+    grid-area: 3 / 1 / 4 / 4;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+    margin-left: 10px;
+    li {
+        margin-bottom: 10px;
+    }
+}
