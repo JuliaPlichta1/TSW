@@ -1,0 +1,47 @@
+$yellowish_color: rgb(233, 233, 163);
+$salmon_color: rgb(230, 153, 122);
+$greyblue_color: rgb(225, 229, 252);
+$lightblue_color: rgb(176, 243, 248);
+$lightbrown_color: rgb(197, 176, 145);
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+
+.item {
+    border: 1px solid black;
+    background-color: $yellowish_color;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.5em;
+    padding: 11px;
+}
+
+.item9 {
+    background-color: $salmon_color;
+    grid-column-start: 4;
+    grid-column-end: 6;
+}
+
+.item11 {
+    background-color: $greyblue_color;
+    grid-column-start: 2;
+    grid-row-start: 3;
+    grid-row-end: 7;
+}
+
+.item16 {
+    background-color: $lightblue_color;
+    grid-column-start: 3;
+    grid-column-end: 5;
+    grid-row-start: 4;
+    grid-row-end: 6;
+}
+
+.item29 {
+    background-color: $lightbrown_color;
+    grid-column-start: 1;
+    grid-column-end: 5;
+}
