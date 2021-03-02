@@ -1,5 +1,6 @@
 html, body {
     height: 100%;
+    margin: 0px;
 }
 #outer {
     height: 100%;
@@ -19,9 +20,11 @@ html, body {
         +div.box {
             background-color: gray;
             align-self: center;
+            margin-top: auto;
             +div.box {
                 background-color: rgba(128, 128, 128, 0.658);
                 align-self: flex-end;
+                margin-left: auto;
             }
         }
         
