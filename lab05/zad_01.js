@@ -44,22 +44,24 @@ const call = async (func) => {
     console.log(data);
 };
 
-const razemTab = async(funTab) => {
-    return new Promise(resolve => {
-        var results = [];
-
-        var check = (results) => {
-            if (results.length === funTab.length) {
-                resolve(results);
-            }
-        };
-
-        funTab.forEach((fun) => {
-            fun(results);
-        });
+const razemTab = async (funTab) => {
+    const results = [];
+    const promises = [];
+    funTab.forEach((func) => {
+        promises.push(func(results));
     });
-    
+
+    for (let i = 0; i < promises.length; i++) {
+        let somePromise = await promises[i];
+    }
+    return results; 
 };
 
 
-razemTab([fun1, fun2, fun3, fun4]);
+const results = razemTab([fun1, fun2, fun3, fun4]);
+results.then((data) => {
+    console.log("Finished");
+    data.forEach((item) => {
+        console.log(`Data from functions: ${item}`);
+    });
+})
