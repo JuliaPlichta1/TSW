@@ -31,9 +31,9 @@ const fun4 = (results, cb) => {
 };
 
 const razemTab = (funTab, cb) => {
-    var results = [];
+    const results = [];
 
-    var check = (results) => {
+    const check = (results) => {
         if (results.length === funTab.length) {
             cb(results);
         }
