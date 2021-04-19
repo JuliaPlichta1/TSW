@@ -12,23 +12,23 @@
     <section id="zadanie02">
       <h2>Obsługa zdarzeń</h2>
       <!-- 1) Wyświetl okienko z jakimś alertem po naciśnięciu guzika -->
-      <button>Pokaż okienko z alertem</button>
+      <button @click="showAlert">Pokaż okienko z alertem</button>
       <hr />
 
       <!--
         2) W reakcji na „keydown” umieszczaj kolejne znaki w akapicie zawierającym
            początkowo „WYNIK 1”. (Uwaga: może Ci się przydać: event.target.value)
       -->
-      <input type="text" />
-      <p>WYNIK 1</p>
+      <input type="text" @keydown="writeKey"/>
+      <p>{{ wynik1 }}</p>
       <hr />
 
       <!--
         3) Tym razem umieść tekst wprowadzony poniżej w polu zawierającym początkowo
            „WYNIK 2”, ale zrób to dopiero po naciśnięciu klawisza Enter.
       -->
-      <input type="text" />
-      <p>WYNIK 2</p>
+      <input type="text" @keyup.enter="confirm" />
+      <p>{{ wynik2 }}</p>
 
     </section>
   </body>
