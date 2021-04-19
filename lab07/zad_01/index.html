@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pl-PL">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue.js – Zad 01</title>
+    <link rel="stylesheet" href="styl.css" />
+    <script src="https://unpkg.com/vue@next" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <section id="zadanie01">
+      <!-- 1) Poniżej umieść swoje imię i nazwisko -->
+      <h2>{{ imie }} {{ nazwisko }}</h2>
+
+      <!--
+        2) Z poniżego elementu typu input pobierz „swój wiek” i umieść
+           go w sposób opisany na stronie wewnątrz poiższego akapitu.
+      -->
+      Ile masz lat? <input type="text" v-model="wiek" />
+      <p>{{ wypiszWiek() }}</p>
+
+      <!--
+        3) Poniżej umieść swój wiek w roku podanym w polu input, ale zrób to
+           jedynie wówczas, gdy wczytany rok faktycznie jest „z przyszłości”.
+      -->
+      Rok z przyszłości: <input type="text" v-model="rokZPrzyszlosci">
+      <p v-if="czyRokZPrzyszlosci()">{{ sprawdzRok() }}</p>
+      <p v-else>Twój wiek w roku R</p>
+
+      <!--
+        4) Poniżej (za tekstem „Ulubiona liczba: ”) wyświetl losowo wygenerowaną
+           liczbę naturalną z przedziału (0 to 100).
+      -->
+      <p>Ulubiona liczba: {{ losujLiczbe }}</p>
+      <div>
+        <!-- 5) Wyświetl jakiś obraz wyszukany w Google (użyj v-bind) -->
+        <img v-bind:src="url" />
+      </div>
+
+      <!-- 6) Korzystając z atrybutu „value” wpisz do pola „input” swoje imię -->
+      <input type="text" v-bind:value="imie"/>
+    </section>
+  </body>
+</html>
