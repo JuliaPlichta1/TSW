@@ -11,8 +11,8 @@
     <section id="zadanie03">
       <h2>„Reaktywność” w praktyce</h2>
 
-      <button>Dodaj 5</button>
-      <button>Dodaj 1</button>
+      <button @click="dodaj($event, 5)">Dodaj 5</button>
+      <button @click="dodaj($event, 1)">Dodaj 1</button>
       <!--
         1) Obsłuż powyższe guziki zgodnie z ich sugerowaną przez nazwę funkcją.
            Wyświetlaj „Jeszcze nie" aż do momentu, kiedy wynik będzie dokładnie
@@ -22,7 +22,7 @@
            Do reprezentacji wartości „aktualnej sumy” użyj właściwości
            obliczanej (ang. computed property).
       -->
-      <p>Wynik: WYNIK</p>
+      <p>Wynik: {{ oblicz }}</p>
 
       <!--
         2) Używając „watch” (porównaj – przykład 4 z wykładu) spowoduj, że jeśli
