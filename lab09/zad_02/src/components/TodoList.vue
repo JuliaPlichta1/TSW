@@ -1,6 +1,5 @@
 <template>
     <div class="todolist-container">
-        <h1>Welcome!</h1>
         <div class="search">
             <input type="text" v-model="searchText" @keyup.enter="searchElements" />
             <button @click="searchElements">Search</button>
@@ -12,22 +11,22 @@
                 @click="hideDisplayFinished">
             <label  id="display-finished"> Display finished tasks </label>
         </div>
-        <div v-for="todoElem in todoList" :key="todoElem.id" 
-            v-show="!todoElem.finished || (todoElem.finished && displayFinished)">
-            <TodoElement :id="todoElem.id" :title="todoElem.title" :finished="todoElem.finished" 
-                @deleteTodoElement="deleteElement" @toggleTodoElement="toggleElement"/>
+        <div class="todo-list">
+            <div v-for="todoElem in todoList" :key="todoElem.id" 
+                v-show="!todoElem.finished || (todoElem.finished && displayFinished)">
+                <TodoElement :id="todoElem.id" :title="todoElem.title" :finished="todoElem.finished" 
+                    @deleteTodoElement="deleteElement" @toggleTodoElement="toggleElement"/>
+            </div>
         </div>
-        <AddTodoElement :todoList="todoList" @addTodoElement="addElement"/>
     </div>
 </template>
 
 <script>
 import TodoElement from './TodoElement.vue'
-import AddTodoElement from './AddTodoElement.vue';
 import axios from 'axios';
 export default {
     name: 'TodoList',
-    components: { TodoElement, AddTodoElement },
+    components: { TodoElement },
     data() {
         return {
             todoList: [],
@@ -82,7 +81,7 @@ export default {
     async created() {
         await this.getTodoList();
     },
-}
+};
 </script>
 
 <style>
@@ -91,6 +90,9 @@ export default {
     min-width: 400px;
     margin-left: auto;
     margin-right: auto;
+}
+.todo-list {
+    border: 1px solid gray;
 }
 .search {
     margin-bottom: 5px;
