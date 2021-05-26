@@ -15,10 +15,9 @@
 </template>
 
 <script>
-import axios from 'axios';
 export default {
     name: "AddTodoElement",
-    emits: ["addTodoElement"],
+    emits: ["addTodo", "editTodo"],
     props: {
         todoList: Array
     },
@@ -32,25 +31,13 @@ export default {
     methods: {
         addTodoElement() {
             const todoElem = { title: this.title, finished: false };
-            axios.post("/todoElement", todoElem)
-                .then((response) => {
-                    this.$emit('addTodoElement', response.data);
-                    this.title = "";
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+            this.$emit('addTodo', todoElem);
+            this.title = "";
         },
         editTodoElement() {
-            let editedTodoElement = this.selected;
-            editedTodoElement.title = this.newTitle;
-            axios.put(`/todoElement/${this.selected.id}`, editedTodoElement)
-                .then((response) => {
-                    console.log(response);
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+            let editedtodoElem = this.selected;
+            editedtodoElem.title = this.newTitle;
+            this.$emit('editTodo', editedtodoElem);
             this.selected = "";
             this.newTitle = "";
         }

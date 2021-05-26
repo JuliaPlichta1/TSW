@@ -1,10 +1,9 @@
 <template>
     <div class="todolist-container">
         <div class="search">
-            <input type="text" v-model="searchText" @keyup.enter="searchElements" />
-            <button @click="searchElements">Search</button>
+            <input type="text" v-model="searchText" placeholder="Search..." />
             <button @click="sortElements">Sort</button>
-            <button @click="getTodoList">Clear</button>
+            <button @click="clearSorting">Clear</button>
         </div>
         <div class="display-finished">
             <input type="checkbox" id="display-finished" name="display-finished" :checked="displayFinished" 
@@ -12,10 +11,9 @@
             <label  id="display-finished"> Display finished tasks </label>
         </div>
         <div class="todo-list">
-            <div v-for="todoElem in todoList" :key="todoElem.id" 
+            <div v-for="todoElem in searchedElements" :key="todoElem.id" 
                 v-show="!todoElem.finished || (todoElem.finished && displayFinished)">
-                <TodoElement :id="todoElem.id" :title="todoElem.title" :finished="todoElem.finished" 
-                    @deleteTodoElement="deleteElement" @toggleTodoElement="toggleElement"/>
+                <TodoElement :todoElement="todoElem" @deleteTodo="deleteTodoElement" @toggleTodo="toggleTodoElement"/>
             </div>
         </div>
     </div>
@@ -23,64 +21,55 @@
 
 <script>
 import TodoElement from './TodoElement.vue'
-import axios from 'axios';
 export default {
     name: 'TodoList',
     components: { TodoElement },
+    props: {
+        todoList: Array
+    },
+    emits: [ "deleteTodo", "toggleTodo", "clearSorting" ],
     data() {
         return {
-            todoList: [],
             searchText: "",
-            sortedASC: false,
+            sorted: false,
             displayFinished: true
         }
     },
+    computed: {
+        searchedElements() {
+            if (this.searchText === "") {
+                return this.todoList;
+            } else {
+                return this.todoList.filter((elem) => elem.title.match(this.searchText));
+            }
+        }
+    },
     methods: {
-        async getTodoList() {
-            await axios.get("/todolist")
-                .then(response => {
-                    this.todoList = response.data;
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
-            this.sortedASC = false;
+        deleteTodoElement(todoElem) {
+            this.$emit('deleteTodo', todoElem);
         },
-        addElement(todoElem) {
-            this.todoList.push(todoElem);
-        },
-        deleteElement(todoElem) {
-            const index = this.todoList.findIndex(elem => elem.id === todoElem.id);
-            if (index > -1) {
-                this.todoList.splice(index, 1);
-            }
-        },
-        toggleElement(todoElem) {
-            const index = this.todoList.findIndex(elem => elem.id === todoElem.id);
-            if (index > -1) {
-                this.todoList[index].finished = todoElem.finished;
-            }
-        },
-        async searchElements() {
-            await this.getTodoList();
-            this.todoList = this.todoList.filter(elem => elem.title.match(this.searchText));
+        toggleTodoElement(todoElem) {
+            this.$emit('toggleTodo', todoElem);
         },
         sortElements() {
-            if (this.sortedASC) {
-                this.todoList.reverse();
+            let mTodoList = this.todoList;
+            if (this.sorted) {
+                mTodoList.reverse();
             } else {
                 const compareTitle = (a, b) => (a.title > b.title) ? 1 : ((a.title < b.title) ? -1 : 0)
-                this.todoList = this.todoList.sort(compareTitle);
-                this.sortedASC = true;
+                mTodoList.sort(compareTitle);
+                this.sorted = true;
             }
+        },
+        clearSorting() {
+            this.searchText = "";
+            this.sorted = false;
+            this.$emit('clearSorting');
         },
         hideDisplayFinished() {
             this.displayFinished = !this.displayFinished;
         }
-    },
-    async created() {
-        await this.getTodoList();
-    },
+    }
 };
 </script>
 

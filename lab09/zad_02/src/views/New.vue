@@ -1,37 +1,28 @@
 <template>
     <div class="new-container">
         <h1>Add new task</h1>
-        <AddTodoElement :todoList="todoList" @addTodoElement="redirectToList"/>
+        <AddTodoElement :todoList="todoList"
+            @addTodo="addTodoElement" 
+            @editTodo="editTodoElement" />
     </div>
 </template>
 
 <script>
-import axios from 'axios';
 import AddTodoElement from '../components/AddTodoElement.vue';
 export default {
     name: 'New',
+    emits: ["addTodo", "editTodo"],
     components: { AddTodoElement },
-    data() {
-        return {
-            todoList: []
-        }
+    props: {
+        todoList: Array
     },
     methods: {
-        async getTodoList() {
-            await axios.get("/todolist")
-                .then(response => {
-                    this.todoList = response.data;
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+        addTodoElement(todoElement) {
+            this.$emit('addTodo', todoElement);
         },
-        redirectToList() {
-            this.$router.push('/list');
+        editTodoElement(editedtodoElement) {
+            this.$emit('editTodo', editedtodoElement);
         }
-    },
-    async created() {
-        await this.getTodoList();
-    },
+    }
 };
 </script>

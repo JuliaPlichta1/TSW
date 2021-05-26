@@ -72,6 +72,48 @@ app.delete("/todoElement/:id", async (req, res) => {
     }
 });
 
+const httpServer = require("http").createServer(app);
+
+const clientPort = process.env.CLIENT_PORT || 8080;
+const io = require("socket.io")(httpServer, {
+    cors: {
+        origin: `http://localhost:${clientPort}`,
+        methods: ["GET", "POST"]
+    }
+});
+
+io.on("connection", (socket) => {
+    console.log(`New socket connection: ${socket.id}`);
+
+    socket.on("disconnection", () => {
+        console.log(`Socket ${socket.id} disconnected`);
+    });
+
+    socket.on("addedTodoElement", (todoElement) => {
+        console.log("Added TODO");
+        console.log(todoElement);
+        io.emit("todoElementAdded", todoElement);
+    });
+
+    socket.on("editedTodoElement", (todoElement) => {
+        console.log("Edited TODO");
+        console.log(todoElement);
+        io.emit("todoElementEdited", todoElement);
+    });
+
+    socket.on("deletedTodoElement", (todoElement) => {
+        console.log("Deleted TODO");
+        console.log(todoElement);
+        io.emit("todoElementDeleted", todoElement);
+    });
+
+    socket.on("toggledTodoElement", (todoElement) => {
+        console.log("Toggled TODO");
+        console.log(todoElement);
+        io.emit("todoElementToggled", todoElement);
+    });
+})
+
 require("dotenv").config();
 const dbConnData = {
     host: process.env.PGHOST || "127.0.0.1",
@@ -93,7 +135,7 @@ client
   .then(() => {
     console.log("Connected to PostgreSQL");
     const port = process.env.PORT || 5000;
-    app.listen(port, () => {
+    httpServer.listen(port, () => {
       console.log(`API server listening at http://localhost:${port}`);
     });
   })

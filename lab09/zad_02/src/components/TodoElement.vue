@@ -1,41 +1,30 @@
 <template>
     <div class="todo-element">
-        <span class="toggle" @click="toggleTodoElement" :class="{ 'checked': finished }">
-            <input type="checkbox" id="todo-elem" name="todo-elem" :checked="finished">
-            <label  id="todo-elem"> {{ title }} </label>
+        <span class="toggle" @click="toggleTodoElement" :class="{ 'checked': todoElement.finished }">
+            <input type="checkbox" id="todo-elem" name="todo-elem" :checked="todoElement.finished">
+            <label  id="todo-elem"> {{ todoElement.title }} </label>
         </span>
         <button class="delete" @click="deleteTodoElement">Delete</button>
     </div>
 </template>
 
 <script>
-import axios from 'axios';
 export default {
     name: "TodoElement",
-    emits: ["deleteTodoElement", "toggleTodoElement"],
+    emits: ["deleteTodo", "toggleTodo"],
     props: {
-        id: Number,
-        title: String,
-        finished: Boolean
+        todoElement: {
+            id: Number,
+            title: String,
+            finished: Boolean 
+        }
     },
     methods: {
         deleteTodoElement() {
-            axios.delete(`/todoElement/${this.id}`)
-                .then((response) => {
-                    this.$emit('deleteTodoElement', response.data);
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+            this.$emit('deleteTodo', this.todoElement);
         },
         toggleTodoElement() {
-            axios.patch(`/todoElement/${this.id}`)
-                .then((response) => {
-                    this.$emit('toggleTodoElement', response.data);
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+            this.$emit('toggleTodo', this.todoElement);
         }
     },
 };
