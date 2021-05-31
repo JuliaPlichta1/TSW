@@ -13,7 +13,7 @@
         <div class="todo-list">
             <div v-for="todoElem in searchedElements" :key="todoElem.id" 
                 v-show="!todoElem.finished || (todoElem.finished && displayFinished)">
-                <TodoElement :todoElement="todoElem" @deleteTodo="deleteTodoElement" @toggleTodo="toggleTodoElement"/>
+                <TodoElement :todoElement="todoElem" :isAuthenticated="isAuthenticated" @deleteTodo="deleteTodoElement" @toggleTodo="toggleTodoElement"/>
             </div>
         </div>
     </div>
@@ -25,7 +25,8 @@ export default {
     name: 'TodoList',
     components: { TodoElement },
     props: {
-        todoList: Array
+        todoList: Array,
+        isAuthenticated: Boolean
     },
     emits: [ "deleteTodo", "toggleTodo", "clearSorting" ],
     data() {
@@ -79,6 +80,7 @@ export default {
     min-width: 400px;
     margin-left: auto;
     margin-right: auto;
+    padding: 15px;
 }
 .todo-list {
     border: 1px solid gray;

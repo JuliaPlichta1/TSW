@@ -1,7 +1,7 @@
 <template>
     <div class="list-container">
         <h1>To-do list</h1>
-        <TodoList :todoList="todoList" 
+        <TodoList :todoList="todoList" :isAuthenticated="isAuthenticated"
             @deleteTodo="deleteTodoElement" 
             @toggleTodo="toggleTodoELement" 
             @clearSorting="clearSorting" />
@@ -14,7 +14,8 @@ export default {
     name: 'List',
     components: { TodoList },
     props: {
-        todoList: Array
+        todoList: Array,
+        isAuthenticated: Boolean
     },
     emits: [ "deleteTodo", "toggleTodo", "clearSorting" ],
     methods: {

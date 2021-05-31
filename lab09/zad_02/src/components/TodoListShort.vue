@@ -2,7 +2,7 @@
     <div class="todolist-container">
         <div class="todo-list">
             <div v-for="todoElem in todoList" :key="todoElem.id">
-                <TodoElement :todoElement="todoElem" @deleteTodo="deleteTodoElement" @toggleTodo="toggleTodoElement"/>
+                <TodoElement :todoElement="todoElem" :isAuthenticated="isAuthenticated" @deleteTodo="deleteTodoElement" @toggleTodo="toggleTodoElement"/>
             </div>
         </div>
     </div>
@@ -14,7 +14,8 @@ export default {
     name: 'TodoListShort',
     components: { TodoElement },
     props: {
-        todoList: Array
+        todoList: Array,
+        isAuthenticated: Boolean
     },
     emits: [ "deleteTodo", "toggleTodo" ],
     methods: {

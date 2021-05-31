@@ -1,7 +1,10 @@
 <template>
     <div class="home-container">
         <h1>Home Page</h1>
-        <TodoListShort :todoList="randomTodoList" />
+        <div class="user">
+        Welcome <i>{{ username }}</i>
+        </div>
+        <TodoListShort :todoList="randomTodoList" :isAuthenticated="isAuthenticated" />
     </div>
 </template>
 
@@ -11,7 +14,9 @@ export default {
     name: 'Home',
     components: { TodoListShort },
     props: {
-        todoList: Array
+        todoList: Array,
+        isAuthenticated: Boolean,
+        username: String
     },
     emits: [ "deleteTodo", "toggleTodo" ],
     computed: {

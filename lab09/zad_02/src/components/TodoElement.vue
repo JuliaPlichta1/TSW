@@ -4,7 +4,7 @@
             <input type="checkbox" id="todo-elem" name="todo-elem" :checked="todoElement.finished">
             <label  id="todo-elem"> {{ todoElement.title }} </label>
         </span>
-        <button class="delete" @click="deleteTodoElement">Delete</button>
+        <button v-if="isAuthenticated" class="delete" @click="deleteTodoElement">Delete</button>
     </div>
 </template>
 
@@ -17,7 +17,8 @@ export default {
             id: Number,
             title: String,
             finished: Boolean 
-        }
+        },
+        isAuthenticated: Boolean
     },
     methods: {
         deleteTodoElement() {

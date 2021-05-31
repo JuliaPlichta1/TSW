@@ -6,7 +6,66 @@ app.use(express());
 app.use(express.json());
 app.use(cors());
 
-app.get('/todolist', async (req, res) => {
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+
+const sessionMiddleware = session({ 
+    secret: "SuperSecretPassword", 
+    resave: false, 
+    saveUninitialized: false 
+});
+app.use(sessionMiddleware);
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+const DUMMY_USER = {
+    id: 1,
+    username: "john"
+};
+
+passport.serializeUser((user, cb) => {
+    console.log(`Passport: wywołujemy „serializeUser” dla user.id == ${user.id}`);
+    cb(null, user.id);
+  });
+  
+  passport.deserializeUser((id, cb) => {
+    console.log(`Passport: wywołujemy „deserializeUser” dla id == ${id}`);
+    cb(null, DUMMY_USER);
+  });
+
+passport.use(new LocalStrategy((username, password, done) => {
+    if (username === 'john' && password === 'john123') {
+        console.log("Authentication correct.");
+        return done(null, DUMMY_USER);
+    } else {
+        console.log("Authentication failed. Wrong credential.");
+        return done(null, false);
+    }
+}));
+
+app.get('/user', (req, res) => {
+    res.status(200).send({
+        isAuthenticated: req.isAuthenticated(),
+        user: req.user
+    });
+});
+
+app.post('/login', passport.authenticate("local"), (req, res) => {
+    res.status(200).send({
+        isAuthenticated: req.isAuthenticated(),
+        user: req.user
+    });
+});
+
+app.get('/logout', (req, res) => {
+    req.logout();
+    res.status(200).send("logged out");
+});
+
+app.get('/todolist', async (_req, res) => {
     const selectTodolist = "SELECT * FROM todolist ORDER BY id";
     try {
         const response = await client.query(selectTodolist);
@@ -124,6 +183,7 @@ const dbConnData = {
 };
 
 const { Client } = require("pg");
+const { lchownSync } = require('fs');
 const client = new Client(dbConnData);
 
 const createTableToDoList = "CREATE TABLE IF NOT EXISTS todolist (id SERIAL, title VARCHAR NOT NULL, finished BOOLEAN NOT NULL)";

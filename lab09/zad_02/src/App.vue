@@ -2,13 +2,15 @@
   <div class="app-container">
     <div class="nav">
       <router-link to="/"><button class="router-button">Home</button></router-link>
-      <router-link to="/new"><button class="router-button">Add new task</button></router-link>
-      <router-link to="/list"><button class="router-button">All tasks</button></router-link>
+      <router-link to="/new" v-if="isAuthenticated"><button class="router-button">Add new task</button></router-link>
+      <router-link to="/list" v-if="isAuthenticated"><button class="router-button">All tasks</button></router-link>
+      <router-link to="/login" v-if="!isAuthenticated"><button class="router-button">Login</button></router-link>
+      <span v-if="isAuthenticated"><button @click="logout" class="router-button">Logout</button></span>
     </div>
-    <router-view v-if="dataLoaded" :todoList="todoList" 
+    <router-view v-if="dataLoaded" :todoList="todoList" :isAuthenticated="isAuthenticated" :username="user.username"
         @addTodo="addTodoElement" @editTodo="editTodoElement"
         @deleteTodo="deleteTodoElement" @toggleTodo="toggleTodoElement"
-        @clearSorting="getTodoList" />
+        @clearSorting="getTodoList" @login="login" @logout="logout" />
   </div>
 </template>
 
@@ -21,7 +23,9 @@ export default {
         return {
             socket: {},
             todoList: [],
-            dataLoaded: false
+            dataLoaded: false,
+            isAuthenticated: false,
+            user: {}
         }
     },
     methods: {
@@ -82,6 +86,38 @@ export default {
                 .catch((error) => {
                     console.log(error);
                 });
+        },
+        login(username, password) {
+            axios.post("/login", { username, password })
+                .then((response) => {
+                    this.isAuthenticated = response.data.isAuthenticated;
+                    this.user = response.data.user;
+                    this.$router.push('/');
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
+        async logout() {
+            axios.get("/logout")
+                .then(() => {
+                    this.$router.push("/");
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+                await this.getUser();
+        },
+        async getUser() {
+            await axios.get("/user")
+                .then((response) => {
+                    this.isAuthenticated = response.data.isAuthenticated;
+                    if (response.data.user) {
+                        this.user = response.data.user;
+                    } else {
+                        this.user = {};
+                    }
+                });
         }
     },
     created() {
@@ -90,8 +126,9 @@ export default {
     },
     async mounted() {
         await this.getTodoList();
+        await this.getUser();
         this.dataLoaded = true;
-        
+
         this.socket.on('todoElementAdded', async (todoElement) => {
             console.log('[SOCKET]: Added Todo Element: ', todoElement);
             await this.getTodoList();
