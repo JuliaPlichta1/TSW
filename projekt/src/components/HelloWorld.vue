@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="container mt-2">
     <main class="px-3">
       <h1>{{ msg }}</h1>
       <p class="lead">This is an example paragraph.</p>
@@ -13,8 +13,10 @@
 <script>
 export default {
   name: 'HelloWorld',
-  props: {
-    msg: String,
+  data() {
+    return {
+      msg: 'Welcome'
+    };
   },
 };
 </script>
