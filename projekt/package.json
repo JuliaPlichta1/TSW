@@ -9,9 +9,17 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.9.2",
+    "bcryptjs": "^2.4.3",
     "bootstrap": "^5.0.0-beta3",
+    "connect-redis": "^6.0.0",
     "core-js": "^3.6.5",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
+    "pg": "^8.6.0",
+    "redis": "^3.1.2",
     "vue": "^3.0.0",
     "vue-router": "^4.0.8"
   },
