@@ -24,25 +24,29 @@ router.route('/logout')
 
 router.route('/register')
   .post(async(req, res) => {
-    const result = await pool.query('SELECT * FROM reddit_user WHERE email = ($1)', [req.body.email]);
-    if (result.rows.length > 0) {
-      res.status(409).send('This email is already in use');
+    if (req.body.email === undefined || req.body.password === undefined || req.body.password !== req.body.confirmPassword) {
+      res.status(400).send('Fields cannot be empty and passwords must be equal');
     } else {
-      const hashedPassword = bcrypt.hash(req.body.password);
-      try {
-        const insertUser = 'INSERT INTO reddit_user (email, password) VALUES ($1, $2) RETURNING *';
-        const result = await pool.query(insertUser, [req.body.email, hashedPassword]);
-        if (result.rows.length > 0) {
-          const user = result.rows[0];
-          res.status(200).send({
-            id: user.id,
-            email: user.email
-          });
-        } else {
-          res.status(500).send('Error while adding user to db');
+      const result = await pool.query('SELECT * FROM reddit_user WHERE email = ($1)', [req.body.email]);
+      if (result.rows.length > 0) {
+        res.status(409).send('This email is already in use');
+      } else {
+        const hashedPassword = bcrypt.hash(req.body.password);
+        try {
+          const insertUser = 'INSERT INTO reddit_user (email, password) VALUES ($1, $2) RETURNING *';
+          const result = await pool.query(insertUser, [req.body.email, hashedPassword]);
+          if (result.rows.length > 0) {
+            const user = result.rows[0];
+            res.status(200).send({
+              id: user.id,
+              email: user.email
+            });
+          } else {
+            res.status(500).send('Error while adding user to db');
+          }
+        } catch (error) {
+          res.status(500).send(error);
         }
-      } catch (error) {
-        res.status(500).send(error);
       }
     }
   })

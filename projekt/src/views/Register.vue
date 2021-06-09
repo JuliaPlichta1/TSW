@@ -8,6 +8,11 @@
         <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal" @click="goToLogin">Login</button>
       </template>
     </Popup>
+    <Popup id="registerFailureModal" :icon="'danger'" :headerText="'Error!'">
+      <template v-slot:body>
+        {{ error }} Try again.
+      </template>
+    </Popup>
     <h3>Register</h3>
     <form @submit="submit" class="needs-validation" novalidate>
       <div class="form-floating mb-3">
@@ -45,7 +50,8 @@ export default {
     return {
       email: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
+      error: null
     };
   },
   methods: {
@@ -60,9 +66,8 @@ export default {
         event.preventDefault();
         event.stopPropagation();
       } else {
-        vm.register(vm.email, vm.password);
+        vm.register(vm.email, vm.password, vm.confirmPassword);
       }
-
       form.classList.add('was-validated');
     },
     checkEmail() {
@@ -86,11 +91,12 @@ export default {
         confirmPassword.setCustomValidity('');
       }
     },
-    register(email, password) {
-      axios.post('/api/register', { email, password }, { withCredentials: true })
+    register(email, password, confirmPassword) {
+      const vm = this;
+      axios.post('/api/register', { email, password, confirmPassword }, { withCredentials: true })
         .then((_response) => {
           console.log('Registered succesfully');
-          this.resetForm();
+          vm.resetForm();
           const registerSuccessModal = new Modal(document.getElementById('registerSuccessModal'));
           registerSuccessModal.show();
         })
@@ -104,14 +110,15 @@ export default {
               document.getElementById('invalid-email').innerHTML = error.response.data;
             }
             if (error.response.status === 500) {
-              alert('Internal server error');
+              const failureMsg = 'Internal server error';
+              vm.handleError(failureMsg);
             }
           } else if (error.request) {
-            console.log(error.request);
-            alert('No response received fom server');
+            const failureMsg = 'No response received fom server';
+            vm.handleError(failureMsg);
           } else {
-            console.log('Error', error.message);
-            alert(error.message);
+            const failureMsg = `Error: ${error.message}`;
+            vm.handleError(failureMsg);
           }
         });
     },
@@ -124,6 +131,13 @@ export default {
       this.email = '';
       this.password = '';
       this.confirmPassword = '';
+    },
+    handleError(failureMsg) {
+      this.error = failureMsg;
+      console.log(failureMsg);
+      this.resetForm();
+      const registerFailureModal = new Modal(document.getElementById('registerFailureModal'));
+      registerFailureModal.show();
     }
   },
 };
