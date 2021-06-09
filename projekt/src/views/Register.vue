@@ -10,7 +10,7 @@
     </Popup>
     <Popup id="registerFailureModal" :icon="'danger'" :headerText="'Error!'">
       <template v-slot:body>
-        {{ error }} Try again.
+        {{ error }}
       </template>
     </Popup>
     <h3>Register</h3>
@@ -33,7 +33,7 @@
           Please confirm password.
         </div>
       </div>
-      <button type="submit" class="btn btn-primary px-3">Submit</button>
+      <button type="submit" class="btn btn-primary px-4">Submit</button>
     </form>
   </div>
 </template>
@@ -110,11 +110,11 @@ export default {
               document.getElementById('invalid-email').innerHTML = error.response.data;
             }
             if (error.response.status === 500) {
-              const failureMsg = 'Internal server error';
+              const failureMsg = 'Internal server error.';
               vm.handleError(failureMsg);
             }
           } else if (error.request) {
-            const failureMsg = 'No response received fom server';
+            const failureMsg = 'No response received fom server.';
             vm.handleError(failureMsg);
           } else {
             const failureMsg = `Error: ${error.message}`;
