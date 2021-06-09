@@ -26,7 +26,7 @@ router.route('/register')
   .post(async(req, res) => {
     const result = await pool.query('SELECT * FROM reddit_user WHERE email = ($1)', [req.body.email]);
     if (result.rows.length > 0) {
-      res.send('This email is already in use');
+      res.status(409).send('This email is already in use');
     } else {
       const hashedPassword = bcrypt.hash(req.body.password);
       try {
@@ -39,10 +39,10 @@ router.route('/register')
             email: user.email
           });
         } else {
-          res.send('Error while adding user to db');
+          res.status(500).send('Error while adding user to db');
         }
       } catch (error) {
-        res.send(error);
+        res.status(500).send(error);
       }
     }
   })
