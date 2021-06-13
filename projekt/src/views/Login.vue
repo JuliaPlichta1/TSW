@@ -1,38 +1,113 @@
 <template>
   <div class="container mt-2 px-5">
+    <Popup id="loginFailureModal" :icon="'danger'" :headerText="'Error!'">
+      <template v-slot:body>
+        {{ error }}
+      </template>
+    </Popup>
     <h3>Login</h3>
-    <form @submit="login">
+    <form @submit="submit" class="needs-validation" novalidate>
       <div class="form-floating mb-3">
-        <input type="email" class="form-control" id="email" v-model="email" placeholder="name@example.com" required>
+        <input type="email" class="form-control" id="email" v-model="email" @change="checkEmail" placeholder="name@example.com" required>
         <label for="email">Email address</label>
         <div class="invalid-feedback" id="invalid-email">
-          Invalid email or password.
+          Incorrect email or password.
         </div>
       </div>
       <div class="form-floating mb-3">
         <input type="password" class="form-control" id="password" v-model="password" placeholder="Password" required>
         <label for="password">Password</label>
       </div>
-      <button type="submit" class="btn btn-primary px-3">Submit</button>
+      <button type="submit" class="btn btn-primary px-4">Submit</button>
     </form>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
+import { Modal } from 'bootstrap';
+import Popup from '../components/Popup.vue';
+
 export default {
   name: 'Login',
+  components: { Popup },
   data() {
     return {
       email: '',
-      password: ''
+      password: '',
+      error: null
     };
   },
   methods: {
-    login(event) {
+    submit(event) {
       event.preventDefault();
-      document.getElementById('email').classList.add('is-invalid');
-      document.getElementById('password').classList.add('is-invalid');
+      const vm = this;
+      vm.checkEmail();
+
+      const form = document.querySelector('.needs-validation');
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      } else {
+        vm.login(vm.email, vm.password);
+      }
+      form.classList.add('was-validated');
     },
+    login(email, password) {
+      const vm = this;
+      axios.post('api/login', { email, password }, { withCredentials: true })
+        .then((reqeust) => {
+          console.log(reqeust);
+          vm.$router.push('/');
+        })
+        .catch((error) => {
+          if (error.response) {
+            console.log(error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+            if (error.response.status === 401) {
+              const emailElement = document.getElementById('email');
+              emailElement.classList.add('is-invalid');
+              emailElement.setCustomValidity('Incorrect email or password.');
+              document.getElementById('invalid-email').innerHTML = emailElement.validationMessage;
+              vm.resetPassword();
+            }
+            if (error.response.status === 500) {
+              const failureMsg = 'Internal server error.';
+              vm.handleError(failureMsg);
+            }
+          } else if (error.request) {
+            const failureMsg = 'No response received fom server.';
+            vm.handleError(failureMsg);
+          } else {
+            const failureMsg = `Error: ${error.message}`;
+            vm.handleError(failureMsg);
+          }
+        });
+    },
+    checkEmail() {
+      const vm = this;
+      const emailRegEx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailElement = document.getElementById('email');
+      if (!emailRegEx.test(vm.email)) {
+        emailElement.classList.add('is-invalid');
+        emailElement.setCustomValidity('This is not a valid email.');
+        document.getElementById('invalid-email').innerHTML = emailElement.validationMessage;
+      } else {
+        emailElement.classList.remove('is-invalid');
+        emailElement.setCustomValidity('');
+      }
+    },
+    handleError(failureMsg) {
+      this.error = failureMsg;
+      console.log(failureMsg);
+      this.password = '';
+      const registerFailureModal = new Modal(document.getElementById('loginFailureModal'));
+      registerFailureModal.show();
+    },
+    resetPassword() {
+      this.password = '';
+    }
   },
 };
 </script>

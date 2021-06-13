@@ -73,22 +73,26 @@ export default {
     checkEmail() {
       const vm = this;
       const emailRegEx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const email = document.getElementById('email');
+      const emailElement = document.getElementById('email');
       if (!emailRegEx.test(vm.email)) {
-        email.setCustomValidity('This is not a valid email.');
-        document.getElementById('invalid-email').innerHTML = email.validationMessage;
+        emailElement.classList.add('is-invalid');
+        emailElement.setCustomValidity('This is not a valid email.');
+        document.getElementById('invalid-email').innerHTML = emailElement.validationMessage;
       } else {
-        email.setCustomValidity('');
+        emailElement.classList.remove('is-invalid');
+        emailElement.setCustomValidity('');
       }
     },
     checkPasswords() {
       const vm = this;
-      const confirmPassword = document.getElementById('confirm-password');
+      const confirmPasswordElement = document.getElementById('confirm-password');
       if (vm.password !== vm.confirmPassword) {
-        confirmPassword.setCustomValidity('Passwords must match.');
-        document.getElementById('invalid-password').innerHTML = confirmPassword.validationMessage;
+        confirmPasswordElement.classList.add('is-invalid');
+        confirmPasswordElement.setCustomValidity('Passwords must match.');
+        document.getElementById('invalid-password').innerHTML = confirmPasswordElement.validationMessage;
       } else {
-        confirmPassword.setCustomValidity('');
+        confirmPasswordElement.classList.remove('is-invalid');
+        confirmPasswordElement.setCustomValidity('');
       }
     },
     register(email, password, confirmPassword) {
@@ -114,7 +118,7 @@ export default {
               vm.handleError(failureMsg);
             }
           } else if (error.request) {
-            const failureMsg = 'No response received fom server.';
+            const failureMsg = 'No response received from server.';
             vm.handleError(failureMsg);
           } else {
             const failureMsg = `Error: ${error.message}`;
