@@ -13,11 +13,17 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
+          <li class="nav-item" v-if="isAuth">
+            <router-link to="/userboard" class="nav-link">Userboard</router-link>
+          </li>
+          <li class="nav-item" v-if="!isAuth">
             <router-link to="/login" class="nav-link">Login</router-link>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="!isAuth">
             <router-link to="/register" class="nav-link">Register</router-link>
+          </li>
+          <li class="nav-item" v-if="isAuth">
+            <router-link to="/logout" class="nav-link">Logout</router-link>
           </li>
         </ul>
         <form class="d-flex">
@@ -30,8 +36,14 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
 export default {
   name: 'Navbar',
+  computed: {
+    ...mapGetters([
+      'isAuth',
+    ])
+  },
 };
 </script>
 

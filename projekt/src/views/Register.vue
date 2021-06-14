@@ -114,15 +114,12 @@ export default {
               document.getElementById('invalid-email').innerHTML = error.response.data;
             }
             if (error.response.status === 500) {
-              const failureMsg = 'Internal server error.';
-              vm.handleError(failureMsg);
+              vm.handleError('Internal server error.');
             }
           } else if (error.request) {
-            const failureMsg = 'No response received from server.';
-            vm.handleError(failureMsg);
+            vm.handleError('No response received from server.');
           } else {
-            const failureMsg = `Error: ${error.message}`;
-            vm.handleError(failureMsg);
+            vm.handleError(`Error: ${error.message}`);
           }
         });
     },
@@ -130,16 +127,17 @@ export default {
       this.$router.push('/login');
     },
     resetForm() {
+      const vm = this;
       const form = document.querySelector('.needs-validation');
       form.classList.remove('was-validated');
-      this.email = '';
-      this.password = '';
-      this.confirmPassword = '';
+      vm.email = '';
+      vm.password = '';
+      vm.confirmPassword = '';
     },
     handleError(failureMsg) {
-      this.error = failureMsg;
-      console.log(failureMsg);
-      this.resetForm();
+      const vm = this;
+      vm.error = failureMsg;
+      vm.resetForm();
       const registerFailureModal = new Modal(document.getElementById('registerFailureModal'));
       registerFailureModal.show();
     }

@@ -1,14 +1,25 @@
 import { createWebHistory, createRouter } from 'vue-router';
 import HelloWorld from '@/components/HelloWorld';
+import Userboard from '@/views/Userboard';
 import NotFound from '@/views/NotFound';
 import Login from '@/views/Login';
 import Register from '@/views/Register';
+
+import store from '../store';
 
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: HelloWorld
+  },
+  {
+    path: '/userboard',
+    name: 'Userboard',
+    component: Userboard,
+    meta: {
+      requiresAuth: true
+    }
   },
   {
     path: '/login',
@@ -21,6 +32,13 @@ const routes = [
     component: Register
   },
   {
+    path: '/logout',
+    name: 'Logout',
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
     path: '/:catchAll(.*)',
     name: 'NotFound',
     component: NotFound
@@ -30,6 +48,19 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
+});
+
+router.beforeEach((to, _from, next) => {
+  if (to.meta.requiresAuth) {
+    if (store.getters.isAuth) {
+      if (to.name === 'Logout') {
+        store.dispatch('logout');
+        next({ name: 'Login' });
+      } else next();
+    } else {
+      next({ name: 'Login' });
+    }
+  } else next();
 });
 
 export default router;

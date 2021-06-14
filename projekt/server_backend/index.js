@@ -43,7 +43,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const auth = require('./routes/api/auth');
+const user = require('./routes/api/user');
 app.use('/api', auth);
+app.use('/api/user', user);
 
 app.get('/', (_req, res) => {
   res.status(200).send('OK');

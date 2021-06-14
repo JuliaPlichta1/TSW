@@ -55,9 +55,10 @@ export default {
     },
     login(email, password) {
       const vm = this;
-      axios.post('api/login', { email, password }, { withCredentials: true })
-        .then((reqeust) => {
-          console.log(reqeust);
+      axios.post('/api/login', { email, password }, { withCredentials: true })
+        .then((response) => {
+          this.$store.commit('setIsAuth', response.data.isAuthenticated);
+          this.$store.commit('setUser', response.data.user);
           vm.$router.push('/');
         })
         .catch((error) => {
@@ -70,18 +71,15 @@ export default {
               emailElement.classList.add('is-invalid');
               emailElement.setCustomValidity('Incorrect email or password.');
               document.getElementById('invalid-email').innerHTML = emailElement.validationMessage;
-              vm.resetPassword();
+              vm.password = '';
             }
             if (error.response.status === 500) {
-              const failureMsg = 'Internal server error.';
-              vm.handleError(failureMsg);
+              vm.handleError('Internal server error.');
             }
           } else if (error.request) {
-            const failureMsg = 'No response received fom server.';
-            vm.handleError(failureMsg);
+            vm.handleError('No response received fom server.');
           } else {
-            const failureMsg = `Error: ${error.message}`;
-            vm.handleError(failureMsg);
+            vm.handleError(`Error: ${error.message}`);
           }
         });
     },
@@ -99,14 +97,11 @@ export default {
       }
     },
     handleError(failureMsg) {
-      this.error = failureMsg;
-      console.log(failureMsg);
-      this.password = '';
-      const registerFailureModal = new Modal(document.getElementById('loginFailureModal'));
-      registerFailureModal.show();
-    },
-    resetPassword() {
-      this.password = '';
+      const vm = this;
+      vm.error = failureMsg;
+      vm.password = '';
+      const loginFailureModal = new Modal(document.getElementById('loginFailureModal'));
+      loginFailureModal.show();
     }
   },
 };
