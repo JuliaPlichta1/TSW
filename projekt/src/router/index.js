@@ -1,5 +1,7 @@
 import { createWebHistory, createRouter } from 'vue-router';
 import HelloWorld from '@/components/HelloWorld';
+import SearchResults from '@/views/SearchResults';
+import Subreddit from '@/views/Subreddit';
 import Userboard from '@/views/Userboard';
 import NotFound from '@/views/NotFound';
 import Login from '@/views/Login';
@@ -12,6 +14,27 @@ const routes = [
     path: '/',
     name: 'Home',
     component: HelloWorld
+  },
+  {
+    path: '/search',
+    name: 'SearchResults',
+    component: SearchResults,
+    beforeEnter: (to, from, next) => {
+      if (!to.query.q || !to.query.t || (to.query.t !== 'subreddits' && to.query.t !== 'posts')) {
+        next({
+          name: 'NotFound',
+          params: { catchAll: to.path.substring(1).split('/') },
+          query: to.query
+        });
+      } else {
+        next();
+      }
+    }
+  },
+  {
+    path: '/r/:subreddit',
+    name: 'Subreddit',
+    component: Subreddit
   },
   {
     path: '/userboard',
@@ -39,7 +62,7 @@ const routes = [
     }
   },
   {
-    path: '/:catchAll(.*)',
+    path: '/:catchAll(.*)*',
     name: 'NotFound',
     component: NotFound
   }

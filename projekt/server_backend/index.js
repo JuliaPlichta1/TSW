@@ -44,8 +44,10 @@ app.use(passport.session());
 
 const auth = require('./routes/api/auth');
 const user = require('./routes/api/user');
+const subreddit = require('./routes/api/subreddit');
 app.use('/api', auth);
 app.use('/api/user', user);
+app.use('/api/subreddit', subreddit);
 
 app.get('/', (_req, res) => {
   res.status(200).send('OK');
