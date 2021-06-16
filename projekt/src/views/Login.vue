@@ -59,6 +59,7 @@ export default {
         .then((response) => {
           this.$store.commit('setIsAuth', response.data.isAuthenticated);
           this.$store.commit('setUser', response.data.user);
+          this.$store.dispatch('getUserSubreddits');
           vm.$router.push('/');
         })
         .catch((error) => {

@@ -8,11 +8,13 @@ export default createStore({
   })],
   state: {
     isAuth: false,
-    user: null
+    user: null,
+    userSubreddits: []
   },
   getters: {
     isAuth: state => state.isAuth,
-    user: state => state.user
+    user: state => state.user,
+    userSubreddits: state => state.userSubreddits,
   },
   mutations: {
     setIsAuth(state, value) {
@@ -20,6 +22,15 @@ export default createStore({
     },
     setUser(state, value) {
       state.user = value;
+    },
+    setUserSubreddits(state, value) {
+      state.userSubreddits = value;
+    },
+    addUserSubreddit(state, subreddit) {
+      state.userSubreddits.push(subreddit);
+    },
+    removeUserSubreddit(state, id) {
+      state.userSubreddits = state.userSubreddits.filter(subreddit => subreddit.id !== id);
     }
   },
   actions: {
@@ -28,6 +39,18 @@ export default createStore({
         .then((_response) => {
           commit('setIsAuth', false);
           commit('setUser', null);
+          commit('setUserSubreddits', null);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    getUserSubreddits({ commit }) {
+      axios.get('/api/user/subreddits')
+        .then((response) => {
+          commit('setUserSubreddits', response.data);
+          console.log('user subreddits');
+          console.log(response.data);
         })
         .catch((error) => {
           console.log(error);

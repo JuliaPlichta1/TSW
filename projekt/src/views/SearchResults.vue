@@ -1,5 +1,13 @@
 <template>
   <div class="container mt-2 px-2 mb-3">
+    <Popup id="notLoggedInModal" :icon="'warning'" :headerText="'Not authenticated'">
+      <template v-slot:body>
+        You must be logged in to join to a community.
+      </template>
+      <template v-slot:footer>
+        <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal" @click="goToLogin">Login</button>
+      </template>
+    </Popup>
     <div class="text-start">
       <p class="fs-4 fw-bold mb-1">{{ query.q }}</p>
       <p class="text-muted">search result</p>
@@ -20,9 +28,15 @@
         <div class="list-group overflow-auto list-group-item">
           <router-link :to="'/r/'+subreddit.name" class="list-group-item-action">
             <div class="d-flex justify-content-between align-items-center text-start">
-              <div class="fw-bold mb-1 mx-1">r/{{ subreddit.name }}</div>
-              <div class="mb-1 mx-1">{{ subreddit.description }} </div>
-              <button class="badge bg-primary rounded-pill px-3 mx-1">Join</button>
+              <div class="mx-1">
+                <div class="fw-bold">
+                  r/{{ subreddit.name }}
+                </div>
+                <small><small class="text-muted">{{ subreddit.members }} Members</small></small>
+              </div>
+              <small class="mb-1 mx-1">{{ subreddit.description }} </small>
+              <button class="btn btn-outline-primary rounded-pill btn-sm mx-1 join" @click="submit(subreddit, $event)" v-if="subreddit.userJoined">Leave</button>
+              <button class="btn btn-primary rounded-pill btn-sm mx-1 join" @click="submit(subreddit, $event)" v-else>Join</button>
             </div>
           </router-link>
         </div>
@@ -39,26 +53,98 @@
 <script>
 import axios from 'axios';
 import { useRoute } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Post from '../components/Post.vue';
+import Popup from '../components/Popup.vue';
+import { useStore } from 'vuex';
+import { Modal } from 'bootstrap';
 
 export default {
-  components: { Post },
+  components: { Post, Popup },
   name: 'SearchResults',
   setup(_props) {
     const query = useRoute().query;
+    const store = useStore();
     const result = ref([]);
     const isEmptyResult = ref(false);
+
     const search = async() => {
       result.value = await (await axios.get(`/api/subreddit/search?q=${query.q}&type=${query.t}`)).data;
+      compareUserSubreddits();
       if (result.value.length === 0) {
         isEmptyResult.value = true;
       }
     };
 
+    const compareUserSubreddits = () => {
+      if (store.getters.user && store.getters.userSubreddits) {
+        result.value.forEach(subreddit => {
+          if (store.getters.userSubreddits.some(e => e.id === subreddit.id)) {
+            subreddit.userJoined = true;
+          } else {
+            subreddit.userJoined = false;
+          }
+        });
+      }
+    };
+
     onMounted(search);
 
-    return { query, result, isEmptyResult, search };
+    return {
+      query,
+      result,
+      isEmptyResult,
+      search,
+      isAuth: computed(() => store.getters.isAuth),
+      user: computed(() => store.getters.user),
+      compareUserSubreddits,
+    };
+  },
+  methods: {
+    submit(subreddit, event) {
+      event.preventDefault();
+      if (!this.isAuth) {
+        const notLoggedInModal = new Modal(document.getElementById('notLoggedInModal'));
+        notLoggedInModal.show();
+      } else {
+        if (subreddit.userJoined) {
+          this.leave(subreddit);
+        } else {
+          this.join(subreddit);
+        }
+      }
+    },
+    join(subreddit) {
+      axios.post(`/api/user/join/${subreddit.name}`)
+        .then((_result) => {
+          console.log('user joined');
+          this.$store.commit('addUserSubreddit', subreddit);
+          this.compareUserSubreddits();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    leave(subreddit) {
+      axios.delete(`/api/user/leave/${subreddit.name}`)
+        .then((_result) => {
+          console.log('user left');
+          this.$store.commit('removeUserSubreddit', subreddit.id);
+          this.compareUserSubreddits();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    goToLogin() {
+      this.$router.push('/login');
+    },
   },
 };
 </script>
+
+<style scoped>
+.join{
+  width: 80px;
+}
+</style>

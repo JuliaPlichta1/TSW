@@ -30,8 +30,71 @@ router.route('/changePassword')
           res.status(500).send('Cannot find user in database');
         }
       } catch (error) {
-        res.status(500).send(`Error with database: ${error.code}`);
+        res.status(500).send(`Error with database: ${error}`);
       }
+    }
+  })
+  .all(rejectMethod);
+
+router.route('/subreddits')
+  .get(isAuth, async(req, res) => {
+    try {
+      const select = `SELECT s.* FROM subreddit_user su JOIN subreddit s
+        ON su.subreddit_id = s.id WHERE su.user_id = ${req.user.id}`;
+      const result = await pool.query(select);
+      res.status(200).send(result.rows);
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error}`);
+    }
+  })
+  .all(rejectMethod);
+
+router.route('/join/:subreddit')
+  .post(isAuth, async(req, res) => {
+    try {
+      const select = 'SELECT * FROM subreddit WHERE name = $1';
+      const result = await pool.query(select, [req.params.subreddit]);
+      if (result.rows.length > 0) {
+        const subreddit = result.rows[0];
+        const select = 'SELECT * FROM subreddit_user WHERE subreddit_id = $1 AND user_id = $2';
+        const result2 = await pool.query(select, [subreddit.id, req.user.id]);
+        if (result2.rows.length > 0) {
+          res.status(400).send('User has already joined subreddit');
+        } else {
+          const insert = 'INSERT INTO subreddit_user (user_id, subreddit_id) VALUES ($1, $2)';
+          await pool.query(insert, [req.user.id, subreddit.id]);
+          res.status(200).send('Succecfully joined to subreddit');
+        }
+      } else {
+        res.status(400).send('There is no subreddit with this name');
+      }
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error}`);
+    }
+  })
+  .all(rejectMethod);
+
+router.route('/leave/:subreddit')
+  .delete(isAuth, async(req, res) => {
+    try {
+      const select = 'SELECT * FROM subreddit WHERE name = $1';
+      const result = await pool.query(select, [req.params.subreddit]);
+      if (result.rows.length > 0) {
+        const subreddit = result.rows[0];
+        const select = 'SELECT * FROM subreddit_user WHERE subreddit_id = $1 AND user_id = $2';
+        const result2 = await pool.query(select, [subreddit.id, req.user.id]);
+        if (result2.rows.length > 0) {
+          const DELETE = 'DELETE FROM subreddit_user WHERE subreddit_id = $1 AND user_id = $2';
+          await pool.query(DELETE, [subreddit.id, req.user.id]);
+          res.status(200).send('Succecfully left subreddit');
+        } else {
+          res.status(400).send('User is not in the subreddit');
+        }
+      } else {
+        res.status(400).send('There is no subreddit with this name');
+      }
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error}`);
     }
   })
   .all(rejectMethod);
