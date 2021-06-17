@@ -9,12 +9,14 @@ export default createStore({
   state: {
     isAuth: false,
     user: null,
-    userSubreddits: []
+    userSubreddits: [],
+    moderatedSubreddits: []
   },
   getters: {
     isAuth: state => state.isAuth,
     user: state => state.user,
     userSubreddits: state => state.userSubreddits,
+    moderatedSubreddits: state => state.moderatedSubreddits,
   },
   mutations: {
     setIsAuth(state, value) {
@@ -25,6 +27,9 @@ export default createStore({
     },
     setUserSubreddits(state, value) {
       state.userSubreddits = value;
+    },
+    setModeratedSubreddits(state, value) {
+      state.moderatedSubreddits = value;
     },
     addUserSubreddit(state, subreddit) {
       state.userSubreddits.push(subreddit);
@@ -49,8 +54,15 @@ export default createStore({
       axios.get('/api/user/subreddits')
         .then((response) => {
           commit('setUserSubreddits', response.data);
-          console.log('user subreddits');
-          console.log(response.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    getModeratedSubreddits({ commit }) {
+      axios.get('/api/user/moderatedSubreddits')
+        .then((response) => {
+          commit('setModeratedSubreddits', response.data);
         })
         .catch((error) => {
           console.log(error);

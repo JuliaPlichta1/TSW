@@ -1,26 +1,29 @@
 <template>
-  <div class="list-group overflow-auto list-group-item ">
-    <router-link :to="'/r/'+post.name+'/comments/'+post.id" class="list-group-item-action">
-      <div class="d-flex justify-content-between align-items-center">
-        <img :src="post.image_path" alt="image" class="img-thumbnail mx-1 " style="width: 100px;">
-        <div class="text-start">
-          <div class="fw-bold mb-1 mx-1">{{ post.title }}</div>
-          <div class="d-flex flex-column justify-content-start text-start my-module">
-            <div class="mx-1" id="post-content">{{ post.content }} </div>
+  <div class="overflow-auto">
+    <div class="d-flex justify-content-between align-items-center">
+      <img :src="post.image_path" alt="image" class="img-thumbnail mx-1" style="width: 100px;" v-if="thumbnail">
+      <div>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex mb-1 mx-1 text-small" v-if="!thumbnail">
+            <router-link :to="'/r/'+subredditName" class="fw-bold" v-if="withSubredditName">r/{{ subredditName }}</router-link>
+            <span class="text-muted ms-1">Posted by u/{{ post.nickname }} {{ time_ago(post.creation_date) }}</span>
           </div>
-          <small class="d-flex flex-column justify-content-start text-start">
-            <small class="mb-1 mx-1">
-              <router-link :to="'/r/'+post.name" class="fw-bold" v-if="withSubredditName">
-                r/{{ post.name }}
-              </router-link>
-              <span class="text-muted">
-              Posted by u/{{ post.nickname }} {{ time_ago(post.creation_date) }}
-              </span>
-            </small>
-          </small>
+          <button class="btn btn-sm btn-warning" v-if="userIsModerator">Delete post</button>
+        </div>
+        <div class="text-start fw-bold mb-1 mx-1">{{ post.title }}</div>
+        <div class="text-start my-module mx-1" :id="'post-overflow-'+overflow">
+          <div v-html="changeURLsToLinks(post.content)"></div>
+        </div>
+        <img :src="post.image_path" alt="image" class="my-2" style="width: 250px;" v-if="!thumbnail">
+        <div class="text-start mb-1 ms-1 text-small" v-if="thumbnail">
+          <router-link :to="'/r/'+subredditName" class="fw-bold" v-if="withSubredditName">r/{{ subredditName }}</router-link>
+          <span class="text-muted ms-1">Posted by u/{{ post.nickname }} {{ time_ago(post.creation_date) }}</span>
+        </div>
+        <div class="ratio ratio-16x9" v-if="!thumbnail && post.video_url">
+          <iframe :src="post.video_url.replace('watch?v=', 'embed/')" title="YouTube video" allowfullscreen></iframe>
         </div>
       </div>
-    </router-link>
+    </div>
   </div>
 </template>
 
@@ -29,7 +32,20 @@ export default {
   name: 'Post',
   props: {
     post: Object,
+    subredditName: String,
     withSubredditName: {
+      type: Boolean,
+      default: false
+    },
+    overflow: {
+      type: Boolean,
+      default: true
+    },
+    thumbnail: {
+      type: Boolean,
+      default: true
+    },
+    userIsModerator: {
       type: Boolean,
       default: false
     }
@@ -90,6 +106,23 @@ export default {
         }
       }
       return time;
+    },
+    changeURLsToLinks(inputText) {
+      let replacedText;
+
+      // URLs starting with http://, https://, or ftp://
+      const pattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/gim;
+      replacedText = inputText.replace(pattern1, '<a href="$1" target="_blank">$1</a>');
+
+      // URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+      const pattern2 = /(^|[^/])(www\.[\S]+(\b|$))/gim;
+      replacedText = replacedText.replace(pattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+      // Change email addresses to mailto:: links.
+      const pattern3 = /(([a-zA-Z0-9\-_.])+@[a-zA-Z_]+?(\.[a-zA-Z]{2,6})+)/gim;
+      replacedText = replacedText.replace(pattern3, '<a href="mailto:$1">$1</a>');
+
+      return replacedText;
     }
   },
 };
@@ -97,15 +130,14 @@ export default {
 
 <style scoped>
 .my-module {
-  margin: 0 0 1em 0;
   overflow: hidden;
   font: 1em/1em 'Open Sans', sans-serif;
 }
-#post-content {
+#post-overflow-true {
   position: relative;
-  height: 4em;
+  height: 3em;
 }
-#post-content:after {
+#post-overflow-true:after {
   content: "";
   text-align: right;
   position: absolute;
@@ -114,5 +146,8 @@ export default {
   width: 70%;
   height: 1em;
   background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 50%);
+}
+.text-small {
+  font-size: 0.77em;
 }
 </style>

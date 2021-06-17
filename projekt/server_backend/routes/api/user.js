@@ -49,6 +49,19 @@ router.route('/subreddits')
   })
   .all(rejectMethod);
 
+router.route('/moderatedSubreddits')
+  .get(isAuth, async(req, res) => {
+    try {
+      const select = `SELECT s.* FROM subreddit_moderator sm 
+        JOIN subreddit s ON sm.subreddit_id = s.id WHERE sm.user_id = ${req.user.id}`;
+      const result = await pool.query(select);
+      res.status(200).send(result.rows);
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error}`);
+    }
+  })
+  .all(rejectMethod);
+
 router.route('/join/:subreddit')
   .post(isAuth, async(req, res) => {
     try {

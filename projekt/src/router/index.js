@@ -2,6 +2,7 @@ import { createWebHistory, createRouter } from 'vue-router';
 import HelloWorld from '@/components/HelloWorld';
 import SearchResults from '@/views/SearchResults';
 import Subreddit from '@/views/Subreddit';
+import Comments from '@/views/Comments';
 import Userboard from '@/views/Userboard';
 import NotFound from '@/views/NotFound';
 import Login from '@/views/Login';
@@ -35,6 +36,11 @@ const routes = [
     path: '/r/:subreddit',
     name: 'Subreddit',
     component: Subreddit
+  },
+  {
+    path: '/r/:subreddit/comments/:postId',
+    name: 'Comments',
+    component: Comments
   },
   {
     path: '/userboard',

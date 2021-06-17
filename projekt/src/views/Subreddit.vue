@@ -11,12 +11,34 @@
     <div class="dashboard bg-light py-2">
       <h2>r/{{ subreddit.name }}</h2>
       <small>{{ subreddit.members }} Members</small>
-      <div class="mb-2">{{ subreddit.description }}</div>
+      <div class="mb-1">{{ subreddit.description }}</div>
+      <div class="moderators mb-1">
+        <small>
+          Moderators:
+          <div v-for="(user, id) in subreddit.moderators" :key="id">
+            <div class="fw-bold text-warning" v-if="subreddit.moderator">
+              You are a moderator!
+            </div>
+            <div v-else>
+              u/{{ user.nickname }}
+            </div>
+          </div>
+        </small>
+      </div>
       <button class="btn btn-outline-primary rounded-pill px-5 mx-1" @click="submit(subreddit, $event)" v-if="subreddit.userJoined">Leave</button>
       <button class="btn btn-primary rounded-pill px-5 mx-1" @click="submit(subreddit, $event)" v-else>Join</button>
     </div>
-    <div class="container mt-2 px-2 mb-3" v-for="(post, id) in posts" :key="id">
-      <Post :post="post" />
+    <div class="container mt-2 px-2 mb-3">
+      <div class="d-flex justify-content-center">
+        <div style="width: 40rem">
+          <div class="d-flex justify-content-center" v-for="(post, id) in posts" :key="id">
+            <router-link :to="'/r/'+subreddit.name+'/comments/'+post.id" class="list-group-item list-group-item-action">
+              <Post :post="post" :subredditName="subreddit.name" :overflow="false"
+                :thumbnail="false" :userIsModerator="subreddit.moderator" />
+            </router-link>
+          </div>
+        </div>
+      </div>
     </div>
     <div v-if="posts.length === 0">
       <p>There are no posts yet</p>
@@ -57,10 +79,17 @@ export default {
             subreddit.value.userJoined = false;
           }
         }
+        if (store.getters.user && store.getters.moderatedSubreddits) {
+          if (store.getters.moderatedSubreddits.some(e => e.id === subreddit.value.id)) {
+            subreddit.value.moderator = true;
+          } else {
+            subreddit.value.moderator = false;
+          }
+        }
         dataLoaded.value = true;
       } catch (error) {
         if (error.response.status === 400) {
-          router.push({
+          router.replace({
             name: 'NotFound',
             params: { catchAll: route.path.substring(1).split('/') }
           });

@@ -60,6 +60,7 @@ export default {
           this.$store.commit('setIsAuth', response.data.isAuthenticated);
           this.$store.commit('setUser', response.data.user);
           this.$store.dispatch('getUserSubreddits');
+          this.$store.dispatch('getModeratedSubreddits');
           vm.$router.push('/');
         })
         .catch((error) => {

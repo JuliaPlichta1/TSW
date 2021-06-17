@@ -44,7 +44,9 @@
     </div>
     <div v-else-if="query.t === 'posts'">
       <div v-for="(post, id) in result" :key="id">
-        <Post :post="post" :withSubredditName="true"/>
+        <router-link :to="'/r/'+post.name+'/comments/'+post.id" class="list-group-item list-group-item-action">
+          <Post :post="post" :subredditName="post.name" :withSubredditName="true"/>
+        </router-link>
       </div>
     </div>
   </div>
