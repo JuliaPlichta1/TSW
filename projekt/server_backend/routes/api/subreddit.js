@@ -32,9 +32,11 @@ router.route('/search')
             JOIN subreddit s ON su.subreddit_id = s.id WHERE s.name ILIKE $1 GROUP BY s.id`;
           result = await pool.query(selectQuery, [`%${req.query.q}%`]);
         } else if (req.query.type === 'posts') {
-          const select = 'SELECT s.*, p.*, u.nickname FROM subreddit s ' +
-            'JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id ' +
-            'WHERE content ILIKE $1 OR title ILIKE $1';
+          const select = `SELECT s.*, p.*, u.nickname, votes_result FROM subreddit s 
+            JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id 
+            LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
+              FROM post_vote GROUP BY post_id ) votes
+            ON votes.post_id = p.id WHERE content ILIKE $1 OR title ILIKE $1`;
           result = await pool.query(select, [`%${req.query.q}%`]);
         } else {
           res.status(400).send('Type param can only be "subreddits" or "posts"');
@@ -61,8 +63,11 @@ router.route('/r/:subreddit')
           ON sm.subreddit_id = s.id WHERE s.name = $1`;
         const result2 = await pool.query(select, [req.params.subreddit]);
         subreddit.moderators = result2.rows;
-        select = 'SELECT p.*, u.nickname FROM subreddit s ' +
-        'JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id WHERE s.name = $1';
+        select = `SELECT p.*, u.nickname, votes_result FROM subreddit s
+        JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id
+        LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
+          FROM post_vote GROUP BY post_id ) votes
+        ON votes.post_id = p.id WHERE s.name = $1`;
         const result3 = await pool.query(select, [req.params.subreddit]);
         const posts = result3.rows;
         res.status(200).send({ subreddit, posts });
@@ -71,6 +76,26 @@ router.route('/r/:subreddit')
       }
     } catch (error) {
       res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .patch(async(req, res) => {
+    if (req.body.description === undefined || req.body.description === '') {
+      res.status(400).send('Description cannot be empty');
+    } else {
+      try {
+        const select = `SELECT sm.* FROM subreddit_moderator sm 
+          JOIN subreddit s ON sm.subreddit_id = s.id WHERE s.name = $1 AND sm.user_id = $2`;
+        const result = await pool.query(select, [req.params.subreddit, req.user.id]);
+        if (result.rows.length === 0) {
+          res.status(409).send('User is not a moderator of this subreddit');
+        } else {
+          const update = 'UPDATE subreddit SET description = $1 WHERE name = $2';
+          await pool.query(update, [req.body.description, req.params.subreddit]);
+          res.status(200).send('Updated successfully');
+        }
+      } catch (error) {
+        res.status(500).send(`Error with database: ${error.message}`);
+      }
     }
   })
   .all(rejectMethod);
@@ -115,7 +140,25 @@ const formatedTimestamp = () => {
   return `${date} ${time}`;
 };
 
-router.route('/r/:subreddit/post')
+router.route('/votes/:postId')
+  .get(async(req, res) => {
+    try {
+      const select = `SELECT COALESCE(SUM(vote)) votes_result, post_id
+        FROM post_vote GROUP BY post_id HAVING post_id = $1`;
+      const result = await pool.query(select, [req.params.postId]);
+      if (result.rows.length > 0) {
+        const postVotes = result.rows[0];
+        res.status(200).send(postVotes);
+      } else {
+        res.status(200).send({});
+      }
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .all(rejectMethod);
+
+router.route('/r/:subreddit/:postId')
   .post(isAuth, upload.single('image-file'), async(req, res) => {
     if (req.body.title === undefined || req.body.title === '') {
       res.status(400).send('Field "title" cannot be empty');
@@ -157,12 +200,6 @@ router.route('/r/:subreddit/post')
         }
       }
     }
-    // console.log(JSON.stringify(req.body));
-    // console.log(JSON.stringify(req.file));
-    // if (req.file) {
-    //   const _imagePath = `http://${host}:${port}/uploads/${req.file.filename}`;
-    // }
-    // res.status(201).send({ body: req.body, file: req.file });
   })
   .all(rejectMethod);
 
@@ -179,9 +216,11 @@ router.route('/r/:subreddit/comments/:postId')
           ON sm.subreddit_id = s.id WHERE s.id = $1`;
         const result2 = await pool.query(select, [subreddit.id]);
         subreddit.moderators = result2.rows;
-        select = `SELECT p.*, u.nickname FROM post p 
-          JOIN reddit_user u ON p.user_id = u.id 
-          JOIN subreddit s ON p.subreddit_id = s.id WHERE p.id = $1 AND s.id = $2`;
+        select = `SELECT p.*, u.nickname, votes_result FROM post p 
+          JOIN reddit_user u ON p.user_id = u.id JOIN subreddit s ON p.subreddit_id = s.id
+          LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
+            FROM post_vote GROUP BY post_id ) votes
+          ON votes.post_id = p.id WHERE p.id = $1 AND s.id = $2`;
         const result3 = await pool.query(select, [req.params.postId, subreddit.id]);
         if (result3.rows.length > 0) {
           const post = result3.rows[0];
@@ -200,6 +239,32 @@ router.route('/r/:subreddit/comments/:postId')
       }
     } catch (error) {
       res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .delete(isAuth, async(req, res) => {
+    const client = await pool.connect();
+    try {
+      const select = `SELECT sm.* FROM subreddit_moderator sm 
+        JOIN subreddit s ON sm.subreddit_id = s.id WHERE s.name = $1 AND sm.user_id = $2`;
+      const result = await client.query(select, [req.params.subreddit, req.user.id]);
+      if (result.rows.length === 0) {
+        res.status(409).send('User is not a moderator of this subreddit');
+      } else {
+        client.query('BEGIN');
+        let deleteQuery = 'DELETE FROM post_vote WHERE post_id = $1';
+        await client.query(deleteQuery, [req.params.postId]);
+        deleteQuery = 'DELETE FROM comment WHERE post_id = $1';
+        await client.query(deleteQuery, [req.params.postId]);
+        deleteQuery = 'DELETE FROM post WHERE id = $1';
+        await client.query(deleteQuery, [req.params.postId]);
+        await client.query('COMMIT');
+        res.status(200).send('Deleted successfully');
+      }
+    } catch (error) {
+      await client.query('ROLLBACK');
+      res.status(500).send(`Error with database: ${error.message}`);
+    } finally {
+      client.release();
     }
   })
   .all(rejectMethod);

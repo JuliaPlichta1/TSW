@@ -31,7 +31,7 @@
           </slot>
         </section>
         <footer class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">{{ footerButtonText }}</button>
           <slot name="footer">
           </slot>
         </footer>
@@ -45,7 +45,11 @@ export default {
   name: 'Popup',
   props: {
     headerText: String,
-    icon: String
+    icon: String,
+    footerButtonText: {
+      type: String,
+      default: 'Close'
+    }
   }
 };
 </script>

@@ -32,7 +32,7 @@
                 <div class="fw-bold">
                   r/{{ subreddit.name }}
                 </div>
-                <small><small class="text-muted">{{ subreddit.members }} Members</small></small>
+                <small><small class="text-muted">{{ subreddit.members }} {{ subreddit.members === '1' ? 'Member' : 'Members' }}</small></small>
               </div>
               <small class="mb-1 mx-1">{{ subreddit.description }} </small>
               <div v-if="!subreddit.moderator">
@@ -50,7 +50,7 @@
     <div v-else-if="query.t === 'posts'">
       <div v-for="(post, id) in result" :key="id">
         <router-link :to="'/r/'+post.name+'/comments/'+post.id" class="list-group-item list-group-item-action">
-          <Post :post="post" :subredditName="post.name" :withSubredditName="true"/>
+          <Post :post="post" :subredditName="post.name" :withSubredditName="true" @vote="vote" />
         </router-link>
       </div>
     </div>
@@ -100,6 +100,13 @@ export default {
       }
     };
 
+    const updatePostVoteResult = async(postId) => {
+      const data = await (await axios.get(`/api/subreddit/votes/${postId}`)).data;
+      const index = result.value.findIndex(el => el.id === postId);
+
+      result.value[index].votes_result = data.votes_result;
+    };
+
     onMounted(search);
 
     return {
@@ -110,6 +117,7 @@ export default {
       isAuth: computed(() => store.getters.isAuth),
       user: computed(() => store.getters.user),
       compareUserSubreddits,
+      updatePostVoteResult,
     };
   },
   methods: {
@@ -129,7 +137,6 @@ export default {
     join(subreddit) {
       axios.post(`/api/user/join/${subreddit.name}`)
         .then((_result) => {
-          console.log('user joined');
           this.$store.commit('addUserSubreddit', subreddit);
           this.compareUserSubreddits();
         })
@@ -140,7 +147,6 @@ export default {
     leave(subreddit) {
       axios.delete(`/api/user/leave/${subreddit.name}`)
         .then((_result) => {
-          console.log('user left');
           this.$store.commit('removeUserSubreddit', subreddit.id);
           this.compareUserSubreddits();
         })
@@ -150,6 +156,15 @@ export default {
     },
     goToLogin() {
       this.$router.push('/login');
+    },
+    vote(data) {
+      axios.post(`/api/user/vote/${data.postId}`, { vote: data.vote })
+        .then((_response) => {
+          this.updatePostVoteResult(data.postId);
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+        });
     },
   },
 };

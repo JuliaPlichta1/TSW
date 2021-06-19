@@ -100,7 +100,6 @@ export default {
         formData, { headers: { 'Content-Type': 'undefined' } })
         .then((result) => {
           console.log('Created successfully!');
-          console.log(result);
           vm.postId = result.data.id;
           vm.resetForm();
           const createPostSuccessModal = new Modal(document.getElementById('createPostSuccessModal'));

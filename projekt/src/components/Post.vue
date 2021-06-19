@@ -1,7 +1,16 @@
 <template>
-  <div class="overflow-auto">
-    <div class="d-flex justify-content-between align-items-center">
-      <img :src="post.image_path" alt="image" class="img-thumbnail mx-1" style="width: 100px;" v-if="thumbnail">
+  <div class="overflow-auto" v-if="dataLoaded">
+    <div class="d-flex justify-content-between">
+      <div class="my-2 me-2">
+        <div class="votes d-flex flex-column">
+          <button v-if="postUserVote === 0 || postUserVote === -1" class="btn btn-sm btn-outline-secondary" @click="voteUp">+</button>
+          <button v-if="postUserVote === 1" class="btn btn-sm btn-secondary" @click="voteZero">+</button>
+          <small>{{ post.votes_result }}</small>
+          <button v-if="postUserVote === 0 || postUserVote === 1" class="btn btn-sm btn-outline-secondary" @click="voteDown">-</button>
+          <button v-if="postUserVote === -1" class="btn btn-sm btn-secondary" @click="voteZero">-</button>
+        </div>
+      </div>
+      <img :src="post.image_path" alt="no image" class="img-thumbnail mx-1" style="width: 100px;" v-if="thumbnail">
       <div class="d-flex flex-column justify-content-between align-items-center w-100">
         <div class="w-100">
           <div class="d-flex justify-content-between mb-1 text-small" v-if="!thumbnail">
@@ -9,7 +18,7 @@
               <router-link :to="'/r/'+subredditName" class="fw-bold me-1" v-if="withSubredditName">r/{{ subredditName }}</router-link>
               <span class="text-muted">Posted by u/{{ post.nickname }} {{ time_ago(post.creation_date) }}</span>
             </div>
-            <button class="btn btn-sm btn-warning" v-if="userIsModerator">Delete post</button>
+            <button class="btn btn-sm btn-warning ms-2" v-if="userIsModerator" @click="confirmDelete">Delete post</button>
           </div>
         </div>
         <div class="w-100">
@@ -34,8 +43,17 @@
 </template>
 
 <script>
+import axios from 'axios';
+import { ref, onMounted, _computed } from 'vue';
+
 export default {
   name: 'Post',
+  emits: ['openConfirmDeleteModal', 'vote'],
+  data() {
+    return {
+      error: null,
+    };
+  },
   props: {
     post: Object,
     subredditName: String,
@@ -55,6 +73,29 @@ export default {
       type: Boolean,
       default: false
     }
+  },
+  setup(props) {
+    const postUserVote = ref({});
+    const dataLoaded = ref(false);
+
+    const checkUserVote = async() => {
+      axios.get(`/api/user/vote/${props.post.id}`)
+        .then((response) => {
+          postUserVote.value = response.data.vote;
+          dataLoaded.value = true;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+
+    onMounted(checkUserVote);
+
+    return {
+      dataLoaded,
+      postUserVote,
+      checkUserVote,
+    };
   },
   methods: {
     time_ago(time) {
@@ -129,6 +170,29 @@ export default {
       replacedText = replacedText.replace(pattern3, '<a href="mailto:$1">$1</a>');
 
       return replacedText;
+    },
+    confirmDelete(event) {
+      event.preventDefault();
+      const vm = this;
+      vm.$emit('openConfirmDeleteModal', { subredditName: vm.subredditName, postId: vm.post.id });
+    },
+    voteUp(event) {
+      event.preventDefault();
+      const vm = this;
+      vm.postUserVote = 1;
+      vm.$emit('vote', { postId: vm.post.id, vote: 1 });
+    },
+    voteDown(event) {
+      event.preventDefault();
+      const vm = this;
+      vm.postUserVote = -1;
+      vm.$emit('vote', { postId: vm.post.id, vote: -1 });
+    },
+    voteZero(event) {
+      event.preventDefault();
+      const vm = this;
+      vm.postUserVote = 0;
+      vm.$emit('vote', { postId: vm.post.id, vote: 0 });
     }
   },
 };

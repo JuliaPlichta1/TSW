@@ -119,4 +119,48 @@ router.route('/leave/:subreddit')
   })
   .all(rejectMethod);
 
+router.route('/vote/:postId')
+  .get(isAuth, async(req, res) => {
+    try {
+      const select = 'SELECT * FROM post_vote WHERE user_id = $1 AND post_id = $2';
+      const result = await pool.query(select, [req.user.id, req.params.postId]);
+      if (result.rows.length > 0) {
+        res.status(200).send({ vote: result.rows[0].vote });
+      } else {
+        res.status(200).send({ vote: 0 });
+      }
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .post(isAuth, async(req, res) => {
+    if (req.body.vote === undefined ||
+      (req.body.vote !== 0 && req.body.vote !== -1 && req.body.vote !== 1)) {
+      res.status(400).send('Vote cannot be empty and must be equal to 0, 1 or -1');
+    } else {
+      const client = await pool.connect();
+      try {
+        const select = 'SELECT * FROM post WHERE id = $1';
+        const result = await client.query(select, [req.params.postId]);
+        if (result.rows.length > 0) {
+          client.query('BEGIN');
+          const deleteQuery = 'DELETE FROM post_vote WHERE user_id = $1 AND post_id = $2';
+          await client.query(deleteQuery, [req.user.id, req.params.postId]);
+          const insert = 'INSERT INTO post_vote(vote, user_id, post_id) VALUES ($1, $2, $3)';
+          await client.query(insert, [req.body.vote, req.user.id, req.params.postId]);
+          await client.query('COMMIT');
+          res.status(200).send('Successfully voted');
+        } else {
+          res.status(400).send('There is no post with this id');
+        }
+      } catch (error) {
+        await client.query('ROLLBACK');
+        res.status(500).send(`Error with database: ${error.message}`);
+      } finally {
+        client.release();
+      }
+    }
+  })
+  .all(rejectMethod);
+
 module.exports = router;

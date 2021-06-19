@@ -1,22 +1,27 @@
 <template>
   <div class="container-sm mt-3 mb-3" v-if="dataLoaded">
     <div class="d-flex justify-content-center">
-      <div>
-        <Post :post="post" :subredditName="subreddit.name"
-          :withSubredditName="true" :overflow="false" :thumbnail="false"
-          :userIsModerator="subreddit.moderator" class="list-group-item"/>
-        <div v-for="(comment, id) in comments" :key="id">
-          <div class="list-group list-group-item">
-            <div class="comment">
-              <div class="text-start">
-                <div class="d-flex flex-row justify-content-between align-items-center">
-                  <div class="fw-bold me-2">
-                    u/{{ comment.nickname }}
+      <div style="width: 40rem">
+        <div class="d-flex justify-content-center">
+          <div>
+            <Post :post="post" :subredditName="subreddit.name"
+              :withSubredditName="true" :overflow="false" :thumbnail="false"
+              :userIsModerator="subreddit.moderator" class="list-group-item"
+              @openConfirmDeleteModal="openConfirmDeleteModal" @vote="vote" />
+            <div v-for="(comment, id) in comments" :key="id">
+              <div class="list-group list-group-item">
+                <div class="comment">
+                  <div class="text-start">
+                    <div class="d-flex flex-row justify-content-between align-items-center">
+                      <div class="fw-bold me-2">
+                        u/{{ comment.nickname }}
+                      </div>
+                      <button class="btn btn-sm btn-warning" v-if="subreddit.moderator">Delete</button>
+                    </div>
+                    <div class="text-start">
+                      {{ comment.content }}
+                    </div>
                   </div>
-                  <button class="btn btn-sm btn-warning" v-if="subreddit.moderator">Delete</button>
-                </div>
-                <div class="text-start">
-                  {{ comment.content }}
                 </div>
               </div>
             </div>
@@ -36,6 +41,7 @@ import Post from '../components/Post.vue';
 
 export default {
   components: { Post },
+  emits: ['openConfirmDeleteModal'],
   name: 'Comments',
   setup(_props) {
     const route = useRoute();
@@ -79,6 +85,11 @@ export default {
       }
     };
 
+    const updatePostVoteResult = async() => {
+      const data = await (await axios.get(`/api/subreddit/votes/${post.value.id}`)).data;
+      post.value.votes_result = data.votes_result;
+    };
+
     onMounted(getSubredditPostComments);
 
     return {
@@ -87,7 +98,23 @@ export default {
       comments,
       dataLoaded,
       getSubredditPostComments,
+      updatePostVoteResult,
     };
+  },
+  methods: {
+    openConfirmDeleteModal(data) {
+      const vm = this;
+      vm.$emit('openConfirmDeleteModal', data);
+    },
+    vote(data) {
+      axios.post(`/api/user/vote/${data.postId}`, { vote: data.vote })
+        .then((_response) => {
+          this.updatePostVoteResult();
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+        });
+    },
   },
 };
 </script>
