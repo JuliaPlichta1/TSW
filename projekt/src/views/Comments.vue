@@ -1,7 +1,7 @@
 <template>
   <div class="container-sm mt-3 mb-3" v-if="dataLoaded">
     <div class="d-flex justify-content-center">
-      <div style="width: 40rem">
+      <div>
         <Post :post="post" :subredditName="subreddit.name"
           :withSubredditName="true" :overflow="false" :thumbnail="false"
           :userIsModerator="subreddit.moderator" class="list-group-item"/>

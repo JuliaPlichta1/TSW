@@ -35,8 +35,13 @@
                 <small><small class="text-muted">{{ subreddit.members }} Members</small></small>
               </div>
               <small class="mb-1 mx-1">{{ subreddit.description }} </small>
-              <button class="btn btn-outline-primary rounded-pill btn-sm mx-1 join" @click="submit(subreddit, $event)" v-if="subreddit.userJoined">Leave</button>
-              <button class="btn btn-primary rounded-pill btn-sm mx-1 join" @click="submit(subreddit, $event)" v-else>Join</button>
+              <div v-if="!subreddit.moderator">
+                <button class="btn btn-outline-primary rounded-pill btn-sm mx-1 join" @click="submit(subreddit, $event)" v-if="subreddit.userJoined">Leave</button>
+                <button class="btn btn-primary rounded-pill btn-sm mx-1 join" @click="submit(subreddit, $event)" v-else>Join</button>
+              </div>
+              <div v-else>
+                <button class="btn btn-warning rounded-pill btn-sm mx-1 join" disabled>Moderator</button>
+              </div>
             </div>
           </router-link>
         </div>
@@ -86,6 +91,11 @@ export default {
           } else {
             subreddit.userJoined = false;
           }
+          if (store.getters.moderatedSubreddits.some(e => e.id === subreddit.id)) {
+            subreddit.moderator = true;
+          } else {
+            subreddit.moderator = false;
+          }
         });
       }
     };
@@ -124,7 +134,7 @@ export default {
           this.compareUserSubreddits();
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
         });
     },
     leave(subreddit) {
@@ -135,7 +145,7 @@ export default {
           this.compareUserSubreddits();
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
         });
     },
     goToLogin() {
@@ -147,6 +157,6 @@ export default {
 
 <style scoped>
 .join{
-  width: 80px;
+  width: 85px;
 }
 </style>

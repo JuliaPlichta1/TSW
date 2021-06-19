@@ -16,6 +16,9 @@
           <li class="nav-item" v-if="isAuth">
             <router-link to="/userboard" class="nav-link">Userboard</router-link>
           </li>
+          <li class="nav-item" v-if="isAuth">
+            <router-link to="/subreddits/create" class="nav-link">New subreddit</router-link>
+          </li>
           <li class="nav-item" v-if="!isAuth">
             <router-link to="/login" class="nav-link">Login</router-link>
           </li>

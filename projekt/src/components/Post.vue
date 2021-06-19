@@ -2,24 +2,30 @@
   <div class="overflow-auto">
     <div class="d-flex justify-content-between align-items-center">
       <img :src="post.image_path" alt="image" class="img-thumbnail mx-1" style="width: 100px;" v-if="thumbnail">
-      <div>
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="d-flex mb-1 mx-1 text-small" v-if="!thumbnail">
+      <div class="d-flex flex-column justify-content-between align-items-center w-100">
+        <div class="w-100">
+          <div class="d-flex justify-content-between mb-1 text-small" v-if="!thumbnail">
+            <div>
+              <router-link :to="'/r/'+subredditName" class="fw-bold me-1" v-if="withSubredditName">r/{{ subredditName }}</router-link>
+              <span class="text-muted">Posted by u/{{ post.nickname }} {{ time_ago(post.creation_date) }}</span>
+            </div>
+            <button class="btn btn-sm btn-warning" v-if="userIsModerator">Delete post</button>
+          </div>
+        </div>
+        <div class="w-100">
+          <div class="text-start fw-bold mb-1">{{ post.title }}</div>
+        </div>
+        <div class="text-start my-module mx-1 w-100" :id="'post-overflow-'+overflow">
+          <div v-html="changeURLsToLinks(post.content)"></div>
+        </div>
+        <img :src="post.image_path" class="my-2 w-75" v-if="!thumbnail">
+        <div class="w-100">
+          <div class="text-start mb-1 ms-1 text-small" v-if="thumbnail">
             <router-link :to="'/r/'+subredditName" class="fw-bold" v-if="withSubredditName">r/{{ subredditName }}</router-link>
             <span class="text-muted ms-1">Posted by u/{{ post.nickname }} {{ time_ago(post.creation_date) }}</span>
           </div>
-          <button class="btn btn-sm btn-warning" v-if="userIsModerator">Delete post</button>
         </div>
-        <div class="text-start fw-bold mb-1 mx-1">{{ post.title }}</div>
-        <div class="text-start my-module mx-1" :id="'post-overflow-'+overflow">
-          <div v-html="changeURLsToLinks(post.content)"></div>
-        </div>
-        <img :src="post.image_path" alt="image" class="my-2" style="width: 250px;" v-if="!thumbnail">
-        <div class="text-start mb-1 ms-1 text-small" v-if="thumbnail">
-          <router-link :to="'/r/'+subredditName" class="fw-bold" v-if="withSubredditName">r/{{ subredditName }}</router-link>
-          <span class="text-muted ms-1">Posted by u/{{ post.nickname }} {{ time_ago(post.creation_date) }}</span>
-        </div>
-        <div class="ratio ratio-16x9" v-if="!thumbnail && post.video_url">
+        <div class="ratio ratio-16x9 w-75" v-if="!thumbnail && post.video_url">
           <iframe :src="post.video_url.replace('watch?v=', 'embed/')" title="YouTube video" allowfullscreen></iframe>
         </div>
       </div>

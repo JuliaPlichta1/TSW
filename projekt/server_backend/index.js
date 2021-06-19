@@ -3,15 +3,21 @@ const cors = require('cors');
 
 const app = express();
 
+const clientHost = process.env.CLIENT_HOST || 'localhost';
+const clientPort = process.env.CLIENT_PORT || 8080;
 app.use(cors({
   credentials: true,
-  origin: 'http://localhost:8080'
+  origin: `http://${clientHost}:${clientPort}`
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({
   extended: false
 }));
+
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const session = require('express-session');
 const redis = require('redis');
@@ -55,7 +61,8 @@ app.get('/', (_req, res) => {
 
 const httpServer = require('http').createServer(app);
 
-const port = 5000;
+const host = process.env.HOST || 'localhost';
+const port = process.env.PORT || 5000;
 httpServer.listen(port, () => {
-  console.log(`API server listening at http://localhost:${port}`);
+  console.log(`API server listening at http://${host}:${port}`);
 });

@@ -31,6 +31,9 @@ export default createStore({
     setModeratedSubreddits(state, value) {
       state.moderatedSubreddits = value;
     },
+    addModeratedSubreddits(state, subreddit) {
+      state.moderatedSubreddits.push(subreddit);
+    },
     addUserSubreddit(state, subreddit) {
       state.userSubreddits.push(subreddit);
     },

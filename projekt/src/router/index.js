@@ -2,6 +2,8 @@ import { createWebHistory, createRouter } from 'vue-router';
 import HelloWorld from '@/components/HelloWorld';
 import SearchResults from '@/views/SearchResults';
 import Subreddit from '@/views/Subreddit';
+import CreateSubreddit from '@/views/CreateSubreddit';
+import CreatePost from '@/views/CreatePost';
 import Comments from '@/views/Comments';
 import Userboard from '@/views/Userboard';
 import NotFound from '@/views/NotFound';
@@ -36,6 +38,22 @@ const routes = [
     path: '/r/:subreddit',
     name: 'Subreddit',
     component: Subreddit
+  },
+  {
+    path: '/r/:subreddit/submit',
+    name: 'CreatePost',
+    component: CreatePost,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/subreddits/create',
+    name: 'CreateSubreddit',
+    component: CreateSubreddit,
+    meta: {
+      requiresAuth: true
+    }
   },
   {
     path: '/r/:subreddit/comments/:postId',

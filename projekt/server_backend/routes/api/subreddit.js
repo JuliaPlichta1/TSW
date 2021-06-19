@@ -2,7 +2,11 @@ const express = require('express');
 const { pool } = require('../../database');
 const router = express.Router();
 
-const { _isAuth, rejectMethod } = require('../index');
+const { isAuth, rejectMethod } = require('../index');
+const { upload } = require('../../multer');
+
+const host = process.env.HOST || 'localhost';
+const port = process.env.PORT || 5000;
 
 router.route('/')
   .get(async(req, res) => {
@@ -68,6 +72,97 @@ router.route('/r/:subreddit')
     } catch (error) {
       res.status(500).send(`Error with database: ${error.message}`);
     }
+  })
+  .all(rejectMethod);
+
+router.route('/create')
+  .post(isAuth, async(req, res) => {
+    if (req.body.name === undefined || req.body.description === undefined ||
+      req.body.name === '' || req.body.description === '') {
+      res.status(400).send('Fields cannot be empty');
+    } else {
+      const client = await pool.connect();
+      try {
+        let result = await client.query('SELECT * FROM subreddit WHERE name = ($1)', [req.body.name]);
+        if (result.rows.length > 0) {
+          res.status(409).send('There is already a subreddit with this name');
+        } else {
+          await client.query('BEGIN');
+          let insert = 'INSERT INTO subreddit(name, description) VALUES ($1, $2) RETURNING *';
+          result = await client.query(insert, [req.body.name, req.body.description]);
+          const subreddit = result.rows[0];
+          insert = 'INSERT INTO subreddit_user(user_id, subreddit_id) VALUES ($1, $2)';
+          await client.query(insert, [req.user.id, subreddit.id]);
+          insert = 'INSERT INTO subreddit_moderator(user_id, subreddit_id) VALUES ($1, $2)';
+          await client.query(insert, [req.user.id, subreddit.id]);
+          await client.query('COMMIT');
+          res.status(201).send(subreddit);
+        }
+      } catch (error) {
+        await client.query('ROLLBACK');
+        res.status(500).send('Error while adding user to db');
+      } finally {
+        client.release();
+      }
+    }
+  })
+  .all(rejectMethod);
+
+const formatedTimestamp = () => {
+  const d = new Date();
+  const date = d.toISOString().split('T')[0];
+  const time = d.toTimeString().split(' ')[0];
+  return `${date} ${time}`;
+};
+
+router.route('/r/:subreddit/post')
+  .post(isAuth, upload.single('image-file'), async(req, res) => {
+    if (req.body.title === undefined || req.body.title === '') {
+      res.status(400).send('Field "title" cannot be empty');
+    } else {
+      try {
+        const select = 'SELECT * FROM subreddit WHERE name = $1';
+        const result = await pool.query(select, [req.params.subreddit]);
+        if (result.rows.length > 0) {
+          const subreddit = result.rows[0];
+          let imagePath = null;
+          if (req.file) {
+            if (req.file.mimetype === 'image/jpeg' || req.file.mimetype === 'image/gif' ||
+            req.file.mimetype === 'image/png') {
+              imagePath = `http://${host}:${port}/uploads/${req.file.filename}`;
+            } else {
+              throw TypeError('Incorrect file type');
+            }
+          }
+          const creationDate = formatedTimestamp();
+          const insert = `INSERT INTO post(title, content, image_path, video_url, creation_date,
+            subreddit_id, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`;
+          const values = [req.body.title, req.body.content, imagePath,
+            req.body.video_url, creationDate, subreddit.id, req.user.id];
+          const result2 = await pool.query(insert, values);
+          if (result2.rows.length > 0) {
+            const post = result2.rows[0];
+            res.status(200).send(post);
+          } else {
+            res.status(500).send('Error while adding post to db');
+          }
+        } else {
+          res.status(400).send('There is no subreddit with this name');
+        }
+      } catch (error) {
+        if (error.message === 'Incorrect file type') {
+          res.status(400).send(error.message);
+        } else {
+          res.status(500).send(`Error with database: ${error.message}`);
+        }
+      }
+    }
+    // console.log(JSON.stringify(req.body));
+    // console.log(JSON.stringify(req.file));
+    // if (req.file) {
+    //   const _imagePath = `http://${host}:${port}/uploads/${req.file.filename}`;
+    // }
+    // res.status(201).send({ body: req.body, file: req.file });
   })
   .all(rejectMethod);
 

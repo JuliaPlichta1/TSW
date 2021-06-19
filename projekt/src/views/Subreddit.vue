@@ -12,7 +12,7 @@
       <h2>r/{{ subreddit.name }}</h2>
       <small>{{ subreddit.members }} Members</small>
       <div class="mb-1">{{ subreddit.description }}</div>
-      <div class="moderators mb-1">
+      <div class="moderators mb-1" v-if="isAuth">
         <small>
           Moderators:
           <div v-for="(user, id) in subreddit.moderators" :key="id">
@@ -25,12 +25,17 @@
           </div>
         </small>
       </div>
-      <button class="btn btn-outline-primary rounded-pill px-5 mx-1" @click="submit(subreddit, $event)" v-if="subreddit.userJoined">Leave</button>
-      <button class="btn btn-primary rounded-pill px-5 mx-1" @click="submit(subreddit, $event)" v-else>Join</button>
+      <div v-if="!subreddit.moderator">
+        <button class="btn btn-outline-primary rounded-pill px-5 mx-1" @click="submit(subreddit, $event)" v-if="subreddit.userJoined">Leave</button>
+        <button class="btn btn-primary rounded-pill px-5 mx-1" @click="submit(subreddit, $event)" v-else>Join</button>
+      </div>
     </div>
     <div class="container mt-2 px-2 mb-3">
       <div class="d-flex justify-content-center">
         <div style="width: 40rem">
+          <div class="w-100 p-3 list-group-item" v-if="isAuth">
+            <input type="text" class="form-control" name="createPost" id="createPost" placeholder="Create Post" @click="goToCreatePost">
+          </div>
           <div class="d-flex justify-content-center" v-for="(post, id) in posts" :key="id">
             <router-link :to="'/r/'+subreddit.name+'/comments/'+post.id" class="list-group-item list-group-item-action">
               <Post :post="post" :subredditName="subreddit.name" :overflow="false"
@@ -128,9 +133,10 @@ export default {
           console.log('user joined');
           this.$store.commit('addUserSubreddit', subreddit);
           this.subreddit.userJoined = true;
+          this.getSubredditPosts();
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
         });
     },
     leave(subreddit) {
@@ -139,13 +145,17 @@ export default {
           console.log('user left');
           this.$store.commit('removeUserSubreddit', subreddit.id);
           this.subreddit.userJoined = false;
+          this.getSubredditPosts();
         })
         .catch((error) => {
-          console.log(error);
+          console.log(error.response.data);
         });
     },
     goToLogin() {
       this.$router.push('/login');
+    },
+    goToCreatePost() {
+      this.$router.push(`/r/${this.subreddit.name}/submit`);
     },
   },
 };

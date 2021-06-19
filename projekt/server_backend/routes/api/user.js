@@ -7,7 +7,8 @@ const { isAuth, rejectMethod } = require('../index');
 
 router.route('/changePassword')
   .patch(isAuth, async(req, res) => {
-    if (req.body.oldPassword === undefined || req.body.newPassword === undefined || req.body.newPassword !== req.body.newPasswordConfirm) {
+    if (req.body.oldPassword === undefined || req.body.newPassword === undefined ||
+      req.body.oldPassword === '' || req.body.newPassword === '' || req.body.newPassword !== req.body.newPasswordConfirm) {
       res.status(400).send('Fields cannot be empty and new passwords must be equal');
     } else {
       try {
@@ -76,7 +77,7 @@ router.route('/join/:subreddit')
         } else {
           const insert = 'INSERT INTO subreddit_user (user_id, subreddit_id) VALUES ($1, $2)';
           await pool.query(insert, [req.user.id, subreddit.id]);
-          res.status(200).send('Succecfully joined to subreddit');
+          res.status(200).send('Successfully joined to subreddit');
         }
       } else {
         res.status(400).send('There is no subreddit with this name');
@@ -97,9 +98,15 @@ router.route('/leave/:subreddit')
         const select = 'SELECT * FROM subreddit_user WHERE subreddit_id = $1 AND user_id = $2';
         const result2 = await pool.query(select, [subreddit.id, req.user.id]);
         if (result2.rows.length > 0) {
-          const DELETE = 'DELETE FROM subreddit_user WHERE subreddit_id = $1 AND user_id = $2';
-          await pool.query(DELETE, [subreddit.id, req.user.id]);
-          res.status(200).send('Succecfully left subreddit');
+          const select = 'SELECT * FROM subreddit_moderator WHERE subreddit_id = $1 AND user_id = $2';
+          const result3 = await pool.query(select, [subreddit.id, req.user.id]);
+          if (result3.rows.length === 0) {
+            const DELETE = 'DELETE FROM subreddit_user WHERE subreddit_id = $1 AND user_id = $2';
+            await pool.query(DELETE, [subreddit.id, req.user.id]);
+            res.status(200).send('Successfully left subreddit');
+          } else {
+            res.status(400).send('User is a moderator of the subreddit and cannot leave');
+          }
         } else {
           res.status(400).send('User is not in the subreddit');
         }
