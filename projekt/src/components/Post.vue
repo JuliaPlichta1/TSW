@@ -1,11 +1,11 @@
 <template>
-  <div class="overflow-auto" v-if="dataLoaded">
+  <div class="overflow-auto">
     <div class="d-flex justify-content-between">
       <div class="my-2 me-2">
         <div class="votes d-flex flex-column">
           <button v-if="postUserVote === 0 || postUserVote === -1" class="btn btn-sm btn-outline-secondary" @click="voteUp">+</button>
           <button v-if="postUserVote === 1" class="btn btn-sm btn-secondary" @click="voteZero">+</button>
-          <small>{{ post.votes_result }}</small>
+          <small>{{ post.votes_result ? post.votes_result : 'Vote' }}</small>
           <button v-if="postUserVote === 0 || postUserVote === 1" class="btn btn-sm btn-outline-secondary" @click="voteDown">-</button>
           <button v-if="postUserVote === -1" class="btn btn-sm btn-secondary" @click="voteZero">-</button>
         </div>
@@ -44,11 +44,12 @@
 
 <script>
 import axios from 'axios';
-import { ref, onMounted, _computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useStore } from 'vuex';
 
 export default {
   name: 'Post',
-  emits: ['openConfirmDeleteModal', 'vote'],
+  emits: ['openConfirmDeleteModal', 'vote', 'openNotLoggedInModal'],
   data() {
     return {
       error: null,
@@ -76,25 +77,27 @@ export default {
   },
   setup(props) {
     const postUserVote = ref({});
-    const dataLoaded = ref(false);
+    postUserVote.value = 0;
+    const store = useStore();
 
     const checkUserVote = async() => {
-      axios.get(`/api/user/vote/${props.post.id}`)
-        .then((response) => {
-          postUserVote.value = response.data.vote;
-          dataLoaded.value = true;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      if (store.getters.user) {
+        axios.get(`/api/user/vote/${props.post.id}`)
+          .then((response) => {
+            postUserVote.value = response.data.vote;
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
     };
 
     onMounted(checkUserVote);
 
     return {
-      dataLoaded,
       postUserVote,
       checkUserVote,
+      isAuth: computed(() => store.getters.isAuth),
     };
   },
   methods: {
@@ -179,20 +182,35 @@ export default {
     voteUp(event) {
       event.preventDefault();
       const vm = this;
-      vm.postUserVote = 1;
-      vm.$emit('vote', { postId: vm.post.id, vote: 1 });
+      if (vm.isAuth) {
+        vm.postUserVote = 1;
+        vm.$emit('vote', { postId: vm.post.id, vote: 1 });
+      } else {
+        const message = 'You must be logged in to vote';
+        vm.$emit('openNotLoggedInModal', message);
+      }
     },
     voteDown(event) {
       event.preventDefault();
       const vm = this;
-      vm.postUserVote = -1;
-      vm.$emit('vote', { postId: vm.post.id, vote: -1 });
+      if (vm.isAuth) {
+        vm.postUserVote = -1;
+        vm.$emit('vote', { postId: vm.post.id, vote: -1 });
+      } else {
+        const message = 'You must be logged in to vote';
+        vm.$emit('openNotLoggedInModal', message);
+      }
     },
     voteZero(event) {
       event.preventDefault();
       const vm = this;
-      vm.postUserVote = 0;
-      vm.$emit('vote', { postId: vm.post.id, vote: 0 });
+      if (vm.isAuth) {
+        vm.postUserVote = 0;
+        vm.$emit('vote', { postId: vm.post.id, vote: 0 });
+      } else {
+        const message = 'You must be logged in to vote';
+        vm.$emit('openNotLoggedInModal', message);
+      }
     }
   },
 };

@@ -6,20 +6,26 @@
       </template>
     </Popup>
     <h3>Login</h3>
-    <form @submit="submit" class="needs-validation" novalidate>
-      <div class="form-floating mb-3">
-        <input type="email" class="form-control" id="email" v-model="email" @change="checkEmail" placeholder="name@example.com" required>
-        <label for="email">Email address</label>
-        <div class="invalid-feedback" id="invalid-email">
-          Incorrect email or password.
+    <div class="d-flex justify-content-center">
+        <div style="width: 40rem">
+          <div class="list-group-item">
+            <form @submit="submit" class="needs-validation" novalidate>
+              <div class="form-floating mb-3 mt-2">
+                <input type="email" class="form-control" id="email" v-model="email" @change="checkEmail" placeholder="name@example.com" required>
+                <label for="email">Email address</label>
+                <div class="invalid-feedback" id="invalid-email">
+                  Incorrect email or password.
+                </div>
+              </div>
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="password" v-model="password" placeholder="Password" required>
+                <label for="password">Password</label>
+              </div>
+              <button type="submit" class="btn btn-primary px-4">Submit</button>
+            </form>
+          </div>
         </div>
       </div>
-      <div class="form-floating mb-3">
-        <input type="password" class="form-control" id="password" v-model="password" placeholder="Password" required>
-        <label for="password">Password</label>
-      </div>
-      <button type="submit" class="btn btn-primary px-4">Submit</button>
-    </form>
   </div>
 </template>
 

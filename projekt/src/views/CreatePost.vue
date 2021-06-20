@@ -14,34 +14,40 @@
       </template>
     </Popup>
     <h3>Create Post</h3>
-    <form @submit="submit" class="needs-validation" novalidate enctype="multipart/form-data">
-      <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="title" v-model="title" placeholder="title" required>
-        <label for="title">Title</label>
-        <div class="invalid-feedback" id="invalid-title">
-          Title cannot be empty.
+    <div class="d-flex justify-content-center">
+      <div style="width: 40rem">
+        <div class="list-group-item">
+          <form @submit="submit" class="needs-validation" novalidate enctype="multipart/form-data">
+            <div class="form-floating mb-3 mt-2">
+              <input type="text" class="form-control" id="title" v-model="title" placeholder="title" required>
+              <label for="title">Title</label>
+              <div class="invalid-feedback" id="invalid-title">
+                Title cannot be empty.
+              </div>
+            </div>
+            <div class="mb-3">
+              <textarea class="form-control" id="content" v-model="content" placeholder="Content" rows="3"></textarea>
+            </div>
+            <div class="mb-3 text-start">
+              <label for="image-file">Upload an image</label>
+              <input type="file" class="form-control" id="image-file" ref="imageFile" name="image-file"
+                accept="image/*" @change="checkImage">
+              <div class="invalid-feedback" id="invalid-image-file">
+                Invalid file type.
+              </div>
+            </div>
+            <div class="form-floating mb-3">
+              <input type="url" class="form-control" id="video-url" v-model="videoUrl" placeholder="">
+              <label for="video-url">YouTube video link</label>
+              <div class="invalid-feedback" id="invalid-video-url">
+                Invalid URL.
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary px-4 mb-3">Submit</button>
+          </form>
         </div>
       </div>
-      <div class="mb-3">
-        <textarea class="form-control" id="content" v-model="content" placeholder="Content" rows="3"></textarea>
-      </div>
-      <div class="mb-3 text-start">
-        <label for="image-file">Upload an image</label>
-        <input type="file" class="form-control" id="image-file" ref="imageFile" name="image-file"
-          accept="image/*" @change="checkImage">
-        <div class="invalid-feedback" id="invalid-image-file">
-          Invalid file type.
-        </div>
-      </div>
-      <div class="form-floating mb-3">
-        <input type="url" class="form-control" id="video-url" v-model="videoUrl" placeholder="">
-        <label for="video-url">YouTube video link</label>
-        <div class="invalid-feedback" id="invalid-video-url">
-          Invalid URL.
-        </div>
-      </div>
-      <button type="submit" class="btn btn-primary px-4 mb-3">Submit</button>
-    </form>
+    </div>
   </div>
 </template>
 

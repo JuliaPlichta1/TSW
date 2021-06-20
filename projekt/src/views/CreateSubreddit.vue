@@ -14,25 +14,30 @@
       </template>
     </Popup>
     <h3>Create subreddit</h3>
-    <form @submit="submit" class="needs-validation" novalidate>
-      <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="name" v-model="name" @change="checkName"
-          placeholder="name" v-lowercase required>
-        <label for="name">Name</label>
-        <div class="invalid-feedback" id="invalid-name">
-          Name cannot be empty.
+      <div class="d-flex justify-content-center">
+        <div style="width: 40rem">
+          <div class="list-group-item">
+            <form @submit="submit" class="needs-validation" novalidate>
+              <div class="form-floating mb-3 mt-2">
+                <input type="text" class="form-control" id="name" v-model="name" @change="checkName"
+                  placeholder="name" v-lowercase required>
+                <label for="name">Name</label>
+                <div class="invalid-feedback" id="invalid-name">
+                  Name cannot be empty.
+                </div>
+              </div>
+              <div class="mb-3">
+                <textarea class="form-control" id="description" v-model="description"
+                  placeholder="Describe a subreddit in a few words." rows="3" required></textarea>
+                <div class="invalid-feedback" id="invalid-description">
+                  Describe field cannot be empty.
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary px-4">Submit</button>
+            </form>
+          </div>
         </div>
       </div>
-      <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="description" v-model="description"
-          placeholder="some description" required>
-        <label for="description">Description</label>
-        <div class="invalid-feedback" id="invalid-description">
-          Describe a subreddit in a few words.
-        </div>
-      </div>
-      <button type="submit" class="btn btn-primary px-4">Submit</button>
-    </form>
   </div>
 </template>
 

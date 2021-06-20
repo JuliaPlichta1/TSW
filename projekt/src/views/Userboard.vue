@@ -6,31 +6,41 @@
       </template>
     </Popup>
     <h2>Profile</h2>
+    <div></div>
+    <p class="mb-1">
+      <span class="fw-bold">Email: </span>{{ user.email }}
+    </p>
     <p>
-      email: {{ user.email }}
+      <span class="fw-bold">Nickname: </span>{{ user.nickname }}
     </p>
     <button class="btn btn-primary mb-3 px-3" @click="toggleForm">Change password</button>
-    <form @submit="submit" class="needs-validation" v-if="showForm" novalidate>
-      <div class="form-floating mb-3">
-        <input type="password" class="form-control" id="old-password" v-model="oldPassword" @change="removeFeedback" placeholder="Current password" required>
-        <label for="old-password">Current password</label>
-        <div class="invalid-feedback" id="invalid-old-password">
-          Incorrect password.
+    <div class="d-flex justify-content-center" v-if="showForm">
+      <div style="width: 40rem">
+        <div class="list-group-item">
+          <form @submit="submit" class="needs-validation" novalidate>
+            <div class="form-floating mb-3 mt-2">
+              <input type="password" class="form-control" id="old-password" v-model="oldPassword" @change="removeFeedback" placeholder="Current password" required>
+              <label for="old-password">Current password</label>
+              <div class="invalid-feedback" id="invalid-old-password">
+                Incorrect password.
+              </div>
+            </div>
+            <div class="form-floating mb-3">
+              <input type="password" class="form-control" id="new-password" v-model="newPassword" @change="checkPasswords" placeholder="New password" required>
+              <label for="new-password">New password</label>
+            </div>
+            <div class="form-floating mb-3">
+              <input type="password" class="form-control" id="new-password-confirm" v-model="newPasswordConfirm" @change="checkPasswords" placeholder="Confirm new password" required>
+              <label for="new-password-confirm">Confirm new password</label>
+              <div class="invalid-feedback" id="invalid-new-passwords">
+                Please confirm password.
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary px-4">Submit</button>
+          </form>
         </div>
       </div>
-      <div class="form-floating mb-3">
-        <input type="password" class="form-control" id="new-password" v-model="newPassword" @change="checkPasswords" placeholder="New password" required>
-        <label for="new-password">New password</label>
-      </div>
-      <div class="form-floating mb-3">
-        <input type="password" class="form-control" id="new-password-confirm" v-model="newPasswordConfirm" @change="checkPasswords" placeholder="Confirm new password" required>
-        <label for="new-password-confirm">Confirm new password</label>
-        <div class="invalid-feedback" id="invalid-new-passwords">
-          Please confirm password.
-        </div>
-      </div>
-      <button type="submit" class="btn btn-primary px-4">Submit</button>
-    </form>
+    </div>
   </div>
 </template>
 

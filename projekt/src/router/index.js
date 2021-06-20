@@ -1,5 +1,5 @@
 import { createWebHistory, createRouter } from 'vue-router';
-import HelloWorld from '@/components/HelloWorld';
+import Home from '@/views/Home';
 import SearchResults from '@/views/SearchResults';
 import Subreddit from '@/views/Subreddit';
 import CreateSubreddit from '@/views/CreateSubreddit';
@@ -16,7 +16,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: HelloWorld
+    component: Home
   },
   {
     path: '/search',

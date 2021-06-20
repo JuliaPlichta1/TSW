@@ -1,13 +1,23 @@
 <template>
-  <div class="container-sm mt-3 mb-3" v-if="dataLoaded">
-    <div class="d-flex justify-content-center">
-      <div style="width: 40rem">
-        <div class="d-flex justify-content-center">
-          <div>
+  <div v-if="dataLoaded">
+    <div class="container mt-2 px-2 mb-3">
+      <div class="d-flex justify-content-center">
+        <div style="width: 40rem">
+          <div class="list-group-item">
             <Post :post="post" :subredditName="subreddit.name"
               :withSubredditName="true" :overflow="false" :thumbnail="false"
-              :userIsModerator="subreddit.moderator" class="list-group-item"
-              @openConfirmDeleteModal="openConfirmDeleteModal" @vote="vote" />
+              :userIsModerator="subreddit.moderator" @vote="vote"
+              @openConfirmDeleteModal="openConfirmDeleteModal" />
+            <div class="new-comment" v-if="isAuth">
+              <div class="w-100 mt-2 d-flex justify-content-start">
+                <small class="text-muted">Comment as u/{{ user.nickname }}</small>
+              </div>
+              <div class="w-100 mb-2" >
+                <textarea class="form-control" name="new-comment" id="new-comment"
+                  placeholder="What do you think?" v-model="newComment" rows="3" maxlength="255"></textarea>
+                <button class="btn btn-primary px-4 mt-2" @click="addComment" :disabled="!newComment">Comment</button>
+              </div>
+            </div>
             <div v-for="(comment, id) in comments" :key="id">
               <div class="list-group list-group-item">
                 <div class="comment">
@@ -34,7 +44,7 @@
 
 <script>
 import axios from 'axios';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import Post from '../components/Post.vue';
@@ -43,6 +53,11 @@ export default {
   components: { Post },
   emits: ['openConfirmDeleteModal'],
   name: 'Comments',
+  data() {
+    return {
+      newComment: null
+    };
+  },
   setup(_props) {
     const route = useRoute();
     const router = useRouter();
@@ -99,6 +114,8 @@ export default {
       dataLoaded,
       getSubredditPostComments,
       updatePostVoteResult,
+      isAuth: computed(() => store.getters.isAuth),
+      user: computed(() => store.getters.user),
     };
   },
   methods: {

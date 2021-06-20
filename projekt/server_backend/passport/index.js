@@ -13,7 +13,8 @@ const validateUser = (username, password, done) => {
       if (bcrypt.compare(password, user.password)) {
         return done(null, {
           id: user.id,
-          email: user.email
+          email: user.email,
+          nickname: user.nickname
         });
       } else {
         return done(null, false);
@@ -41,7 +42,8 @@ passport.deserializeUser((id, done) => {
       const user = result.rows[0];
       return done(null, {
         id: user.id,
-        email: user.email
+        email: user.email,
+        nickname: user.nickname
       });
     } else {
       return done({ msg: 'Unknown ID' });

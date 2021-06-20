@@ -20,6 +20,41 @@ router.route('/')
   })
   .all(rejectMethod);
 
+router.route('/posts/newest')
+  .get(async(req, res) => {
+    try {
+      const select = `SELECT s.*, p.*, u.nickname, votes_result FROM subreddit s 
+      JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id 
+      LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
+        FROM post_vote GROUP BY post_id ) votes
+      ON votes.post_id = p.id ORDER BY creation_date DESC`;
+      const result = await pool.query(select);
+      const posts = result.rows;
+      res.status(200).send(posts);
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .all(rejectMethod);
+
+router.route('/posts/newest/userSubreddits')
+  .get(isAuth, async(req, res) => {
+    try {
+      const select = `SELECT s.*, p.*, u.nickname, votes_result FROM subreddit s 
+      JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id 
+      LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
+        FROM post_vote GROUP BY post_id ) votes ON votes.post_id = p.id
+      JOIN subreddit_user su ON su.subreddit_id = s.id
+      WHERE su.user_id = $1 ORDER BY creation_date DESC`;
+      const result = await pool.query(select, [req.user.id]);
+      const posts = result.rows;
+      res.status(200).send(posts);
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .all(rejectMethod);
+
 router.route('/search')
   .get(async(req, res) => {
     if (!req.query.q || !req.query.type) {
