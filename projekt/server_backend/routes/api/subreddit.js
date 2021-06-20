@@ -304,4 +304,55 @@ router.route('/r/:subreddit/comments/:postId')
   })
   .all(rejectMethod);
 
+router.route('/comment/:id')
+  .get(async(req, res) => {
+    const commentId = req.params.id;
+    try {
+      const select = `SELECT c.*, u.nickname FROM public.comment c
+        JOIN reddit_user u ON c.user_id = u.id WHERE c.id = $1`;
+      const result = await pool.query(select, [commentId]);
+      const comment = result.rows[0];
+      res.status(200).send(comment);
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .post(isAuth, async(req, res) => {
+    if (req.body.content === undefined || req.body.content === '') {
+      res.status(400).send('Comment cannot be empty');
+    } else {
+      try {
+        const postId = req.params.id;
+        let result = await pool.query('SELECT * FROM post WHERE id = ($1)', [postId]);
+        if (result.rows.length === 0) {
+          res.status(409).send('There is no post with this id');
+        } else {
+          const insert = 'INSERT INTO comment(content, user_id, post_id) VALUES ($1, $2, $3) RETURNING *';
+          result = await pool.query(insert, [req.body.content, req.user.id, postId]);
+          const comment = result.rows[0];
+          res.status(201).send(comment);
+        }
+      } catch (error) {
+        res.status(500).send(`Error with database: ${error.message}`);
+      }
+    }
+  })
+  .delete(isAuth, async(req, res) => {
+    try {
+      const commentId = req.params.id;
+      const select = 'SELECT * FROM subreddit_moderator WHERE subreddit_id = $1 AND user_id = $2';
+      const result = await pool.query(select, [req.body.subredditId, req.user.id]);
+      if (result.rows.length === 0) {
+        res.status(409).send('User is not a moderator of this subreddit');
+      } else {
+        const deleteQuery = 'DELETE FROM comment WHERE id = $1';
+        await pool.query(deleteQuery, [commentId]);
+        res.status(200).send('Deleted successfully');
+      }
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .all(rejectMethod);
+
 module.exports = router;

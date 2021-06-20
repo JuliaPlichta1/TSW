@@ -59,6 +59,7 @@ import Popup from '../components/Popup.vue';
 export default {
   name: 'CreatePost',
   components: { Popup },
+  emits: ['addPost'],
   data() {
     return {
       title: '',
@@ -106,6 +107,7 @@ export default {
         formData, { headers: { 'Content-Type': 'undefined' } })
         .then((result) => {
           console.log('Created successfully!');
+          this.$emit('addPost', result.data);
           vm.postId = result.data.id;
           vm.resetForm();
           const createPostSuccessModal = new Modal(document.getElementById('createPostSuccessModal'));

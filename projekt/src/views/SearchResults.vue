@@ -69,7 +69,10 @@ import { Modal } from 'bootstrap';
 export default {
   components: { Post, Popup },
   name: 'SearchResults',
-  setup(_props) {
+  props: {
+    socket: Object,
+  },
+  setup(props) {
     const query = useRoute().query;
     const store = useStore();
     const result = ref([]);
@@ -106,6 +109,17 @@ export default {
 
       result.value[index].votes_result = data.votes_result;
     };
+
+    const deletePost = (postId) => {
+      result.value = result.value.filter(post => post.id !== postId);
+    };
+
+    props.socket.on('postDeleted', async(postId) => {
+      console.log('[SOCKET]: Deleted post: ', postId);
+      if (query.t === 'posts') {
+        deletePost(postId);
+      }
+    });
 
     onMounted(search);
 

@@ -14,9 +14,10 @@
         {{ error }}
       </template>
     </Popup>
-    <router-view :key="$route.fullPath"
+    <router-view v-if="socket" :key="$route.fullPath" :socket="socket"
       @openConfirmDeleteModal="openConfirmDeleteModal"
-      @openFailureModal="openFailureModal" />
+      @openFailureModal="openFailureModal"
+      @addPost="addPost" />
   </div>
 </template>
 
@@ -25,12 +26,14 @@ import axios from 'axios';
 import Navbar from './components/Navbar.vue';
 import Popup from './components/Popup.vue';
 import { Modal } from 'bootstrap';
+import io from 'socket.io-client';
 
 export default {
   name: 'App',
   components: { Navbar, Popup },
   data() {
     return {
+      socket: null,
       error: null,
     };
   },
@@ -53,16 +56,21 @@ export default {
       axios.delete(`/api/subreddit/r/${vm.subredditName}/comments/${vm.postId}`)
         .then((result) => {
           console.log(result.data);
-          if (this.$router.currentRoute.value.name === 'Comments') {
-            this.$router.back();
-          }
-          // TODO socket emits postDeleted
+          vm.socket.emit('deletedPost', vm.postId);
         })
         .catch((error) => {
           console.log(error.response.data);
           vm.openFailureModal(error.response.data);
         });
     },
+    addPost(post) {
+      const vm = this;
+      vm.socket.emit('addedPost', post);
+    },
+  },
+  created() {
+    const port = process.env.PORT || 5000;
+    this.socket = io(`http://localhost:${port}`);
   },
 };
 </script>

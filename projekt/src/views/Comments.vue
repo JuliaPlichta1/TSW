@@ -18,6 +18,15 @@
                 <button class="btn btn-primary px-4 mt-2" @click="addComment" :disabled="!newComment">Comment</button>
               </div>
             </div>
+            <div class="new-comment" v-else>
+              <div class="w-100 mb-2" >
+                <input type="text" class="form-control" name="new-comment" id="new-comment"
+                  placeholder="Log in to comment on this post" v-model="newComment" rows="1" disabled>
+              </div>
+            </div>
+            <div class="text-start fw-bold" v-if="comments.length !== 0">
+              Comments
+            </div>
             <div v-for="(comment, id) in comments" :key="id">
               <div class="list-group list-group-item">
                 <div class="comment">
@@ -26,7 +35,7 @@
                       <div class="fw-bold me-2">
                         u/{{ comment.nickname }}
                       </div>
-                      <button class="btn btn-sm btn-warning" v-if="subreddit.moderator">Delete</button>
+                      <button class="btn btn-sm btn-warning" v-if="subreddit.moderator" @click="deleteComment(comment.id)">Delete</button>
                     </div>
                     <div class="text-start">
                       {{ comment.content }}
@@ -58,7 +67,10 @@ export default {
       newComment: null
     };
   },
-  setup(_props) {
+  props: {
+    socket: Object
+  },
+  setup(props) {
     const route = useRoute();
     const router = useRouter();
     const store = useStore();
@@ -105,6 +117,34 @@ export default {
       post.value.votes_result = data.votes_result;
     };
 
+    const deletePost = (_postId) => {
+      router.back();
+    };
+
+    const addComment = async(comment) => {
+      const data = await (await axios.get(`/api/subreddit/comment/${comment.id}`)).data;
+      comments.value.push(data);
+    };
+
+    const deleteComment = async(commentId) => {
+      comments.value = comments.value.filter(comment => comment.id !== commentId);
+    };
+
+    props.socket.on('postDeleted', async(postId) => {
+      console.log('[SOCKET]: Deleted post: ', postId);
+      deletePost(postId);
+    });
+
+    props.socket.on('commentAdded', async(comment) => {
+      console.log('[SOCKET]: Added comment: ', comment.id);
+      addComment(comment);
+    });
+
+    props.socket.on('commentDeleted', async(commentId) => {
+      console.log('[SOCKET]: Deleted comment: ', commentId);
+      deleteComment(commentId);
+    });
+
     onMounted(getSubredditPostComments);
 
     return {
@@ -127,6 +167,27 @@ export default {
       axios.post(`/api/user/vote/${data.postId}`, { vote: data.vote })
         .then((_response) => {
           this.updatePostVoteResult();
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+        });
+    },
+    addComment() {
+      const vm = this;
+      axios.post(`/api/subreddit/comment/${vm.post.id}`, { content: vm.newComment })
+        .then((response) => {
+          vm.socket.emit('addedComment', response.data);
+          vm.newComment = '';
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+        });
+    },
+    deleteComment(commentId) {
+      const vm = this;
+      axios.delete(`/api/subreddit/comment/${commentId}`, { data: { subredditId: vm.subreddit.id } })
+        .then((_response) => {
+          vm.socket.emit('deletedComment', commentId);
         })
         .catch((error) => {
           console.log(error.response.data);

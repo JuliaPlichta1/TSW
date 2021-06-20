@@ -95,7 +95,10 @@ export default {
       editDescription: '',
     };
   },
-  setup(_props) {
+  props: {
+    socket: Object,
+  },
+  setup(props) {
     const route = useRoute();
     const router = useRouter();
     const store = useStore();
@@ -140,6 +143,20 @@ export default {
 
       posts.value[index].votes_result = data.votes_result;
     };
+
+    const deletePost = (postId) => {
+      posts.value = posts.value.filter(post => post.id !== postId);
+    };
+
+    props.socket.on('postDeleted', async(postId) => {
+      console.log('[SOCKET]: Deleted post: ', postId);
+      deletePost(postId);
+    });
+
+    props.socket.on('postAdded', async(post) => {
+      console.log('[SOCKET]: Added post: ', post.id);
+      // TODO
+    });
 
     onMounted(getSubredditPosts);
 

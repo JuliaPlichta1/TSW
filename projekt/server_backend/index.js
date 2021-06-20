@@ -61,6 +61,40 @@ app.get('/', (_req, res) => {
 
 const httpServer = require('http').createServer(app);
 
+const io = require('socket.io')(httpServer, {
+  cors: {
+    origin: `http://${clientHost}:${clientPort}`,
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log(`New socket connection: ${socket.id}`);
+
+  socket.on('disconnection', () => {
+    console.log(`Socket ${socket.id} disconnected`);
+  });
+
+  socket.on('addedComment', (comment) => {
+    console.log('Added comment');
+    io.emit('commentAdded', comment);
+  });
+
+  socket.on('deletedComment', (commentId) => {
+    console.log('Deleted comment');
+    io.emit('commentDeleted', commentId);
+  });
+
+  socket.on('deletedPost', (postId) => {
+    console.log('Deleted post');
+    io.emit('postDeleted', postId);
+  });
+
+  socket.on('addedPost', (post) => {
+    console.log('Added post');
+    io.emit('postAdded', post);
+  });
+});
+
 const host = process.env.HOST || 'localhost';
 const port = process.env.PORT || 5000;
 httpServer.listen(port, () => {

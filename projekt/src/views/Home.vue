@@ -44,7 +44,10 @@ export default {
       notLoggedInMessage: null
     };
   },
-  setup(_props) {
+  props: {
+    socket: Object,
+  },
+  setup(props) {
     const store = useStore();
     const posts = ref([]);
     const dataLoaded = ref(false);
@@ -77,11 +80,25 @@ export default {
       posts.value[index].votes_result = data.votes_result;
     };
 
+    const deletePost = (postId) => {
+      posts.value = posts.value.filter(post => post.id !== postId);
+    };
+
     if (store.getters.isAuth) {
       onMounted(getNewestPostsUserSubreddits);
     } else {
       onMounted(getNewestPosts);
     }
+
+    props.socket.on('postDeleted', async(postId) => {
+      console.log('[SOCKET]: Deleted post: ', postId);
+      deletePost(postId);
+    });
+
+    props.socket.on('postAdded', async(post) => {
+      console.log('[SOCKET]: Added post: ', post.id);
+      // TODO
+    });
 
     return {
       posts,
