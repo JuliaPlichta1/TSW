@@ -11,7 +11,7 @@
     <div class="dashboard bg-light py-2">
       <div class="container mt-2 px-2 mb-3">
         <div class="d-flex justify-content-center">
-          <div style="width: 40rem">
+          <div class="width-40">
             <div class="d-flex flex-column justify-content-center">
               <h2>r/{{ subreddit.name }}</h2>
               <small class="text-muted">{{ subreddit.members }} {{ subreddit.members === '1' ? 'Member' : 'Members' }}</small>
@@ -56,7 +56,7 @@
     </div>
     <div class="container mt-2 px-2 mb-3">
       <div class="d-flex justify-content-center">
-        <div style="width: 40rem">
+        <div class="width-40">
           <div class="w-100 p-3 list-group-item" v-if="isAuth">
             <input type="text" class="form-control" name="createPost" id="createPost" placeholder="Create Post" @click="goToCreatePost">
           </div>

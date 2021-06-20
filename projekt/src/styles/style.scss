@@ -1,0 +1,18 @@
+@import 'colors';
+
+#app {
+    font-family: Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: $vue-default;
+    margin-top: 0px;
+}
+
+.width-40 {
+    width: 40rem;
+}
+
+button.join{
+    width: 85px;
+}

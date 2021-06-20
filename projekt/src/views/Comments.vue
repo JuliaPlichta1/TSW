@@ -2,7 +2,7 @@
   <div v-if="dataLoaded">
     <div class="container mt-2 px-2 mb-3">
       <div class="d-flex justify-content-center">
-        <div style="width: 40rem">
+        <div class="width-40">
           <div class="list-group-item">
             <Post :post="post" :subredditName="subreddit.name"
               :withSubredditName="true" :overflow="false" :thumbnail="false"

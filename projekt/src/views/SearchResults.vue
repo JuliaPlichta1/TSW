@@ -183,9 +183,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.join{
-  width: 85px;
-}
-</style>

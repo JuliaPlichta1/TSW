@@ -10,8 +10,10 @@
           <button v-if="postUserVote === -1" class="btn btn-sm btn-secondary" @click="voteZero">-</button>
         </div>
       </div>
-      <img :src="post.image_path" alt="no image" class="img-thumbnail mx-1" style="width: 100px;" v-if="thumbnail">
-      <div class="d-flex flex-column justify-content-between align-items-center w-100">
+      <div class="thumbnail" v-if="thumbnail">
+        <img :src="post.image_path" class="img-thumbnail portrait" alt="Image" />
+      </div>
+      <div class="d-flex flex-column justify-content-between align-items-center w-100 ms-1">
         <div class="w-100">
           <div class="d-flex justify-content-between mb-1 text-small" v-if="!thumbnail">
             <div>
@@ -216,26 +218,6 @@ export default {
 };
 </script>
 
-<style scoped>
-.my-module {
-  overflow: hidden;
-  font: 1em/1em 'Open Sans', sans-serif;
-}
-#post-overflow-true {
-  position: relative;
-  height: 3em;
-}
-#post-overflow-true:after {
-  content: "";
-  text-align: right;
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 70%;
-  height: 1em;
-  background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 50%);
-}
-.text-small {
-  font-size: 0.77em;
-}
+<style lang="scss" scoped>
+@import '@/styles/post.scss';
 </style>

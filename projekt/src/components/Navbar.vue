@@ -77,12 +77,6 @@ export default {
 };
 </script>
 
-<style scoped>
-.router-link-active.router-link-exact-active.nav-link {
-    color: orange;
-}
-.navbar-dark .navbar-nav .nav-link:focus,
-.navbar-dark .navbar-nav .nav-link:hover {
-    color: orange;
-}
+<style lang="scss" scoped>
+@import '@/styles/navbar.scss';
 </style>

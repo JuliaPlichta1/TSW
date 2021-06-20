@@ -15,7 +15,7 @@
     </p>
     <button class="btn btn-primary mb-3 px-3" @click="toggleForm">Change password</button>
     <div class="d-flex justify-content-center" v-if="showForm">
-      <div style="width: 40rem">
+      <div class="width-40">
         <div class="list-group-item">
           <form @submit="submit" class="needs-validation" novalidate>
             <div class="form-floating mb-3 mt-2">

@@ -10,7 +10,7 @@
     </Popup>
     <div class="container mt-2 px-2 mb-3">
       <div class="d-flex justify-content-center">
-        <div style="width: 40rem">
+        <div class="width-40">
           <div>
             <p class="fs-4 fw-bold mb-1">Newest posts</p>
           </div>

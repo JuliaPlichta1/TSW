@@ -15,7 +15,7 @@
     </Popup>
     <h3>Create subreddit</h3>
       <div class="d-flex justify-content-center">
-        <div style="width: 40rem">
+        <div class="width-40">
           <div class="list-group-item">
             <form @submit="submit" class="needs-validation" novalidate>
               <div class="form-floating mb-3 mt-2">

@@ -1,0 +1,57 @@
+@import 'colors';
+@import 'mixins';
+
+.my-module {
+  overflow: hidden;
+  font: 1em/1em 'Open Sans', sans-serif;
+}
+
+#post-overflow-true {
+  position: relative;
+  height: 3em;
+}
+
+#post-overflow-true:after {
+  content: "";
+  text-align: right;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 70%;
+  height: 1em;
+  background: linear-gradient(to right, $transparent, $white 50%);
+}
+.text-small {
+  font-size: 0.77em;
+}
+
+.thumbnail {
+  position: relative;
+  width: 180px;
+  height: 100px;
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: 100%;
+    width: auto;
+    -webkit-transform: translate(-50%,-50%);
+        -ms-transform: translate(-50%,-50%);
+            transform: translate(-50%,-50%);
+  }
+  
+  img.portrait {
+    width: 100%;
+    height: 100px;
+    line-height: 100px;
+    object-fit: cover;
+  }
+}
+$bg-color: $redish;
+$font-color: $bluish;
+$width: 50px;
+.btnn {
+  @include button ($bg-color, $font-color, $width)
+}
