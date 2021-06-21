@@ -24,11 +24,15 @@ router.route('/posts/newest')
   .get(async(req, res) => {
     try {
       const select = `SELECT s.*, p.*, u.nickname, votes_result FROM subreddit s 
-      JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id 
-      LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
-        FROM post_vote GROUP BY post_id ) votes
-      ON votes.post_id = p.id ORDER BY creation_date DESC`;
-      const result = await pool.query(select);
+        JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id 
+        LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
+          FROM post_vote GROUP BY post_id ) votes
+        ON votes.post_id = p.id ORDER BY creation_date DESC`;
+
+      const page = parseInt(req.query.page);
+      const limit = parseInt(req.query.limit);
+      const startIndex = (page - 1) * limit;
+      const result = await pool.query(`${select} LIMIT ${req.query.limit} OFFSET ${startIndex};`);
       const posts = result.rows;
       res.status(200).send(posts);
     } catch (error) {
@@ -46,7 +50,54 @@ router.route('/posts/newest/userSubreddits')
         FROM post_vote GROUP BY post_id ) votes ON votes.post_id = p.id
       JOIN subreddit_user su ON su.subreddit_id = s.id
       WHERE su.user_id = $1 ORDER BY creation_date DESC`;
-      const result = await pool.query(select, [req.user.id]);
+
+      const page = parseInt(req.query.page);
+      const limit = parseInt(req.query.limit);
+      const startIndex = (page - 1) * limit;
+      const result = await pool.query(`${select} LIMIT ${req.query.limit} OFFSET ${startIndex};`, [req.user.id]);
+      const posts = result.rows;
+      res.status(200).send(posts);
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .all(rejectMethod);
+
+router.route('/posts/best')
+  .get(async(req, res) => {
+    try {
+      const select = `SELECT s.*, p.*, u.nickname, votes_result FROM subreddit s 
+        JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id 
+        LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
+          FROM post_vote GROUP BY post_id ) votes
+        ON votes.post_id = p.id ORDER BY votes_result DESC NULLS LAST`;
+
+      const page = parseInt(req.query.page);
+      const limit = parseInt(req.query.limit);
+      const startIndex = (page - 1) * limit;
+      const result = await pool.query(`${select} LIMIT ${req.query.limit} OFFSET ${startIndex};`);
+      const posts = result.rows;
+      res.status(200).send(posts);
+    } catch (error) {
+      res.status(500).send(`Error with database: ${error.message}`);
+    }
+  })
+  .all(rejectMethod);
+
+router.route('/posts/best/userSubreddits')
+  .get(isAuth, async(req, res) => {
+    try {
+      const select = `SELECT s.*, p.*, u.nickname, votes_result FROM subreddit s 
+      JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id 
+      LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
+        FROM post_vote GROUP BY post_id ) votes ON votes.post_id = p.id
+      JOIN subreddit_user su ON su.subreddit_id = s.id
+      WHERE su.user_id = $1 ORDER BY votes_result DESC NULLS LAST`;
+
+      const page = parseInt(req.query.page);
+      const limit = parseInt(req.query.limit);
+      const startIndex = (page - 1) * limit;
+      const result = await pool.query(`${select} LIMIT ${req.query.limit} OFFSET ${startIndex};`, [req.user.id]);
       const posts = result.rows;
       res.status(200).send(posts);
     } catch (error) {
@@ -61,17 +112,22 @@ router.route('/search')
       res.status(400).send('Please input q and type params in query');
     } else {
       try {
+        const page = parseInt(req.query.page);
+        const limit = parseInt(req.query.limit);
+        const startIndex = (page - 1) * limit;
         let result;
         if (req.query.type === 'subreddits') {
-          const selectQuery = `SELECT s.*, count(su.id) members FROM subreddit_user su
-            JOIN subreddit s ON su.subreddit_id = s.id WHERE s.name ILIKE $1 GROUP BY s.id`;
-          result = await pool.query(selectQuery, [`%${req.query.q}%`]);
+          const select = `SELECT s.*, count(su.id) members FROM subreddit_user su
+            JOIN subreddit s ON su.subreddit_id = s.id WHERE s.name ILIKE $1 GROUP BY s.id
+            LIMIT ${req.query.limit} OFFSET ${startIndex}`;
+          result = await pool.query(select, [`%${req.query.q}%`]);
         } else if (req.query.type === 'posts') {
           const select = `SELECT s.*, p.*, u.nickname, votes_result FROM subreddit s 
             JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id 
             LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
               FROM post_vote GROUP BY post_id ) votes
-            ON votes.post_id = p.id WHERE content ILIKE $1 OR title ILIKE $1`;
+            ON votes.post_id = p.id WHERE content ILIKE $1 OR title ILIKE $1
+            ORDER BY creation_date DESC LIMIT ${req.query.limit} OFFSET ${startIndex}`;
           result = await pool.query(select, [`%${req.query.q}%`]);
         } else {
           res.status(400).send('Type param can only be "subreddits" or "posts"');

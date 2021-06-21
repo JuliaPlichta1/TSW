@@ -49,11 +49,14 @@
     </div>
     <div v-else-if="query.t === 'posts'">
       <div v-for="(post, id) in result" :key="id">
-        <router-link :to="'/r/'+post.name+'/comments/'+post.id" class="list-group-item list-group-item-action">
+        <router-link :to="'/r/'+post.name+'/comments/'+post.id" class="list-group-item list-group-item-action" v-if="dataLoaded">
           <Post :post="post" :subredditName="post.name" :withSubredditName="true" @vote="vote" />
         </router-link>
       </div>
     </div>
+    <div class="my-2" v-if="showMoreBtn">
+            <button class="btn btn-primary" @click="search">Load more</button>
+          </div>
   </div>
 </template>
 
@@ -77,13 +80,36 @@ export default {
     const store = useStore();
     const result = ref([]);
     const isEmptyResult = ref(false);
+    const dataLoaded = ref(false);
+    const showMoreBtn = ref(false);
+    let page = 0;
+    const limit = 5;
 
     const search = async() => {
-      result.value = await (await axios.get(`/api/subreddit/search?q=${query.q}&type=${query.t}`)).data;
-      compareUserSubreddits();
-      if (result.value.length === 0) {
+      page += 1;
+      let data = [];
+      data = await (await axios
+        .get(`/api/subreddit/search?q=${query.q}&type=${query.t}&page=${page}&limit=${limit}`)).data;
+
+      if (data.length === 0) {
         isEmptyResult.value = true;
+        showMoreBtn.value = false;
+      } else {
+        if (page === 1) {
+          result.value = data;
+          dataLoaded.value = true;
+          showMoreBtn.value = true;
+        } else {
+          result.value = result.value.concat(data);
+        }
       }
+
+      // result.value = await (await axios.get(`/api/subreddit/search?q=${query.q}&type=${query.t}
+      //   &page=${page}&limit=${limit}`)).data;
+      // compareUserSubreddits();
+      // if (result.value.length === 0) {
+      //   isEmptyResult.value = true;
+      // }
     };
 
     const compareUserSubreddits = () => {
@@ -127,6 +153,8 @@ export default {
       query,
       result,
       isEmptyResult,
+      dataLoaded,
+      showMoreBtn,
       search,
       isAuth: computed(() => store.getters.isAuth),
       user: computed(() => store.getters.user),

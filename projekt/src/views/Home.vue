@@ -11,15 +11,26 @@
     <div class="container mt-2 px-2 mb-3">
       <div class="d-flex justify-content-center">
         <div class="width-40">
-          <div>
-            <p class="fs-4 fw-bold mb-1">Newest posts</p>
+          <div class="btn-group w-100" role="group">
+            <input type="radio" class="btn-check" v-model="display" value="newest" id="newest" autocomplete="off" @click="loadNewest">
+            <label class="btn btn-outline-secondary" for="newest">Newest</label>
+            <input type="radio" class="btn-check" v-model="display" value="best" id="best" autocomplete="off" @click="loadBest">
+            <label class="btn btn-outline-secondary" for="best">Best</label>
           </div>
           <div class="d-flex justify-content-center" v-for="(post, id) in posts" :key="id">
-            <router-link :to="'/r/'+post.name+'/comments/'+post.id" class="list-group-item list-group-item-action">
+            <router-link :to="'/r/'+post.name+'/comments/'+post.id" class="list-group-item list-group-item-action" v-if="dataLoaded">
               <Post :post="post" :subredditName="post.name" :withSubredditName="true" :overflow="false"
                 :thumbnail="false" :userIsModerator="post.moderator" @vote="vote"
                 @openConfirmDeleteModal="openConfirmDeleteModal" @openNotLoggedInModal="openNotLoggedInModal" />
             </router-link>
+          </div>
+          <div class="my-2" v-if="showMoreBtn">
+            <div v-if="display === 'newest'">
+              <button class="btn btn-primary" @click="addNewestPosts">Load more</button>
+            </div>
+            <div v-else-if="display === 'best'">
+              <button class="btn btn-primary" @click="addBestPosts">Load more</button>
+            </div>
           </div>
         </div>
       </div>
@@ -41,7 +52,8 @@ export default {
   emits: ['openConfirmDeleteModal'],
   data() {
     return {
-      notLoggedInMessage: null
+      notLoggedInMessage: null,
+      display: 'newest',
     };
   },
   props: {
@@ -51,16 +63,64 @@ export default {
     const store = useStore();
     const posts = ref([]);
     const dataLoaded = ref(false);
+    const showMoreBtn = ref(false);
+    let page = 0;
+    const limit = 5;
 
-    const getNewestPosts = async() => {
-      posts.value = await (await axios.get('/api/subreddit/posts/newest')).data;
-      dataLoaded.value = true;
+    const addNewestPosts = async(resetPage = false) => {
+      if (resetPage === true) {
+        page = 0;
+      }
+      page += 1;
+      let data = [];
+      if (!store.getters.isAuth) {
+        data = await (await axios
+          .get(`/api/subreddit/posts/newest?page=${page}&limit=${limit}`)).data;
+      } else {
+        data = await (await axios
+          .get(`/api/subreddit/posts/newest/userSubreddits?page=${page}&limit=${limit}`)).data;
+      }
+
+      if (data.length === 0) {
+        showMoreBtn.value = false;
+      } else {
+        if (page === 1) {
+          posts.value = data;
+          dataLoaded.value = true;
+          showMoreBtn.value = true;
+        } else {
+          posts.value = posts.value.concat(data);
+        }
+      }
+      if (store.getters.isAuth) compareUserModerator();
     };
 
-    const getNewestPostsUserSubreddits = async() => {
-      posts.value = await (await axios.get('/api/subreddit/posts/newest/userSubreddits')).data;
-      compareUserModerator();
-      dataLoaded.value = true;
+    const addBestPosts = async(resetPage = false) => {
+      if (resetPage === true) {
+        page = 0;
+      }
+      page += 1;
+      let data = [];
+      if (!store.getters.isAuth) {
+        data = await (await axios
+          .get(`/api/subreddit/posts/best?page=${page}&limit=${limit}`)).data;
+      } else {
+        data = await (await axios
+          .get(`/api/subreddit/posts/best/userSubreddits?page=${page}&limit=${limit}`)).data;
+      }
+
+      if (data.length === 0) {
+        showMoreBtn.value = false;
+      } else {
+        if (page === 1) {
+          posts.value = data;
+          dataLoaded.value = true;
+          showMoreBtn.value = true;
+        } else {
+          posts.value = posts.value.concat(data);
+        }
+      }
+      if (store.getters.isAuth) compareUserModerator();
     };
 
     const compareUserModerator = () => {
@@ -84,11 +144,7 @@ export default {
       posts.value = posts.value.filter(post => post.id !== postId);
     };
 
-    if (store.getters.isAuth) {
-      onMounted(getNewestPostsUserSubreddits);
-    } else {
-      onMounted(getNewestPosts);
-    }
+    onMounted(addNewestPosts);
 
     props.socket.on('postDeleted', async(postId) => {
       console.log('[SOCKET]: Deleted post: ', postId);
@@ -103,7 +159,10 @@ export default {
     return {
       posts,
       dataLoaded,
+      showMoreBtn,
       updatePostVoteResult,
+      addNewestPosts,
+      addBestPosts,
     };
   },
   methods: {
@@ -127,6 +186,12 @@ export default {
     },
     goToLogin() {
       this.$router.push('/login');
+    },
+    loadNewest() {
+      this.addNewestPosts(true);
+    },
+    loadBest() {
+      this.addBestPosts(true);
     },
   },
 };
