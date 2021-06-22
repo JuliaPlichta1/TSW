@@ -23,7 +23,7 @@
         <span class="fw-bold">"{{ query.q }}"</span>
       </p>
     </div>
-    <div v-if="query.t === 'subreddits'">
+    <div class="m-3" v-if="query.t === 'subreddits'">
       <div class="row" v-for="(subreddit, id) in result" :key="id">
         <div class="list-group overflow-auto list-group-item">
           <router-link :to="'/r/'+subreddit.name" class="list-group-item-action">
@@ -47,7 +47,7 @@
         </div>
       </div>
     </div>
-    <div v-else-if="query.t === 'posts'">
+    <div class="m-3" v-else-if="query.t === 'posts'">
       <div v-for="(post, id) in result" :key="id">
         <router-link :to="'/r/'+post.name+'/comments/'+post.id" class="list-group-item list-group-item-action" v-if="dataLoaded">
           <Post :post="post" :subredditName="post.name" :withSubredditName="true" @vote="vote" />
@@ -55,8 +55,8 @@
       </div>
     </div>
     <div class="my-2" v-if="showMoreBtn">
-            <button class="btn btn-primary" @click="search">Load more</button>
-          </div>
+      <button class="btn btn-primary" @click="search">Load more</button>
+    </div>
   </div>
 </template>
 

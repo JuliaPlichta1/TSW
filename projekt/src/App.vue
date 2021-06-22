@@ -69,8 +69,8 @@ export default {
     },
   },
   created() {
-    const port = process.env.PORT || 5000;
-    this.socket = io(`http://localhost:${port}`);
+    // const port = process.env.PORT || 5000;
+    this.socket = io();
   },
 };
 </script>

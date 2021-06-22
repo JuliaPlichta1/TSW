@@ -49,9 +49,11 @@
     object-fit: cover;
   }
 }
-$bg-color: $redish;
-$font-color: $bluish;
-$width: 50px;
-.btnn {
-  @include button ($bg-color, $font-color, $width)
+.wrap-text {
+  word-wrap: break-word;
+  word-break: break-all;
+  word-break: break-word;
+}
+.space-nowrap {
+  white-space: nowrap;
 }

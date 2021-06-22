@@ -3,11 +3,11 @@
     <div class="d-flex justify-content-between">
       <div class="my-2 me-2">
         <div class="votes d-flex flex-column">
-          <button v-if="postUserVote === 0 || postUserVote === -1" class="btn btn-sm btn-outline-secondary" @click="voteUp">+</button>
-          <button v-if="postUserVote === 1" class="btn btn-sm btn-secondary" @click="voteZero">+</button>
+          <button v-if="postUserVote === 0 || postUserVote === -1" class="btn btn-sm btn-outline-secondary" @click="voteUp" :disabled='!isAuth'>+</button>
+          <button v-if="postUserVote === 1" class="btn btn-sm btn-secondary" @click="voteZero" :disabled='!isAuth'>+</button>
           <small>{{ post.votes_result ? post.votes_result : 'Vote' }}</small>
-          <button v-if="postUserVote === 0 || postUserVote === 1" class="btn btn-sm btn-outline-secondary" @click="voteDown">-</button>
-          <button v-if="postUserVote === -1" class="btn btn-sm btn-secondary" @click="voteZero">-</button>
+          <button v-if="postUserVote === 0 || postUserVote === 1" class="btn btn-sm btn-outline-secondary" @click="voteDown" :disabled='!isAuth'>-</button>
+          <button v-if="postUserVote === -1" class="btn btn-sm btn-secondary" @click="voteZero" :disabled='!isAuth'>-</button>
         </div>
       </div>
       <div class="thumbnail" v-if="thumbnail">
@@ -20,14 +20,16 @@
               <router-link :to="'/r/'+subredditName" class="fw-bold me-1" v-if="withSubredditName">r/{{ subredditName }}</router-link>
               <span class="text-muted">Posted by u/{{ post.nickname }} {{ time_ago(post.creation_date) }}</span>
             </div>
-            <button class="btn btn-sm btn-warning ms-2" v-if="userIsModerator" @click="confirmDelete">Delete post</button>
+            <div class="space-nowrap">
+              <button class="btn btn-sm btn-warning ms-2" v-if="userIsModerator" @click="confirmDelete">Delete post</button>
+            </div>
           </div>
         </div>
         <div class="w-100">
           <div class="text-start fw-bold mb-1">{{ post.title }}</div>
         </div>
         <div class="text-start my-module mx-1 w-100" :id="'post-overflow-'+overflow">
-          <div v-html="changeURLsToLinks(post.content)"></div>
+          <div class="wrap-text" v-html="changeURLsToLinks(post.content)"></div>
         </div>
         <img :src="post.image_path" class="my-2 w-75" v-if="!thumbnail">
         <div class="w-100">

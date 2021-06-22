@@ -158,7 +158,8 @@ router.route('/r/:subreddit')
         JOIN post p ON p.subreddit_id = s.id JOIN reddit_user u ON p.user_id = u.id
         LEFT JOIN ( SELECT COALESCE(SUM(vote)) votes_result, post_id
           FROM post_vote GROUP BY post_id ) votes
-        ON votes.post_id = p.id WHERE s.name = $1`;
+        ON votes.post_id = p.id WHERE s.name = $1
+        ORDER BY creation_date DESC`;
         const result3 = await pool.query(select, [req.params.subreddit]);
         const posts = result3.rows;
         res.status(200).send({ subreddit, posts });
@@ -318,7 +319,8 @@ router.route('/r/:subreddit/comments/:postId')
           select = `SELECT c.*, u.nickname FROM public.comment c
             JOIN reddit_user u ON c.user_id = u.id
             JOIN post p ON c.post_id = p.id
-            JOIN subreddit s ON p.subreddit_id = s.id WHERE s.name = $1 AND p.id = $2`;
+            JOIN subreddit s ON p.subreddit_id = s.id
+            WHERE s.name = $1 AND p.id = $2 ORDER BY c.id`;
           const result4 = await pool.query(select, [req.params.subreddit, req.params.postId]);
           const comments = result4.rows;
           res.status(200).send({ subreddit, post, comments });

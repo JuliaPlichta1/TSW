@@ -10,7 +10,7 @@
     </Popup>
     <div class="container mt-2 px-2 mb-3">
       <div class="d-flex justify-content-center">
-        <div class="width-40">
+        <div class="width-40 m-2">
           <div class="btn-group w-100" role="group">
             <input type="radio" class="btn-check" v-model="display" value="newest" id="newest" autocomplete="off" @click="loadNewest">
             <label class="btn btn-outline-secondary" for="newest">Newest</label>
