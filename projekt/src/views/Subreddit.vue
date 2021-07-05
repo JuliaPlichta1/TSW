@@ -141,7 +141,10 @@ export default {
       const data = await (await axios.get(`/api/subreddit/votes/${postId}`)).data;
       const index = posts.value.findIndex(el => el.id === postId);
 
-      posts.value[index].votes_result = data.votes_result;
+      console.log(posts.value);
+      if (posts.value[index]) {
+        posts.value[index].votes_result = data.votes_result;
+      }
     };
 
     const deletePost = (postId) => {
@@ -156,6 +159,11 @@ export default {
     props.socket.on('postAdded', async(post) => {
       console.log('[SOCKET]: Added post: ', post.id);
       // TODO
+    });
+
+    props.socket.on('votedOnPost', async(postId) => {
+      console.log('[SOCKET]: Voted on post: ', postId);
+      updatePostVoteResult(postId);
     });
 
     onMounted(getSubredditPosts);
@@ -233,6 +241,7 @@ export default {
     vote(data) {
       axios.post(`/api/user/vote/${data.postId}`, { vote: data.vote })
         .then((_response) => {
+          this.socket.emit('voted', data.postId);
           this.updatePostVoteResult(data.postId);
         })
         .catch((error) => {

@@ -147,6 +147,11 @@ export default {
       }
     });
 
+    props.socket.on('votedOnPost', async(postId) => {
+      console.log('[SOCKET]: Voted on post: ', postId);
+      updatePostVoteResult(postId);
+    });
+
     onMounted(search);
 
     return {
@@ -202,6 +207,7 @@ export default {
     vote(data) {
       axios.post(`/api/user/vote/${data.postId}`, { vote: data.vote })
         .then((_response) => {
+          this.socket.emit('voted', data.postId);
           this.updatePostVoteResult(data.postId);
         })
         .catch((error) => {

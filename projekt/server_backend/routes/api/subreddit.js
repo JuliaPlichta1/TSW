@@ -5,9 +5,6 @@ const router = express.Router();
 const { isAuth, rejectMethod } = require('../index');
 const { upload } = require('../../multer');
 
-const host = process.env.HOST || 'localhost';
-const port = process.env.PORT || 5000;
-
 router.route('/')
   .get(async(req, res) => {
     try {
@@ -264,7 +261,7 @@ router.route('/r/:subreddit/:postId')
           if (req.file) {
             if (req.file.mimetype === 'image/jpeg' || req.file.mimetype === 'image/gif' ||
             req.file.mimetype === 'image/png') {
-              imagePath = `http://${host}:${port}/uploads/${req.file.filename}`;
+              imagePath = `/uploads/${req.file.filename}`;
             } else {
               throw TypeError('Incorrect file type');
             }

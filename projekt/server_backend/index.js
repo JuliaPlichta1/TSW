@@ -3,11 +3,8 @@ const cors = require('cors');
 
 const app = express();
 
-const clientHost = process.env.CLIENT_HOST || 'localhost';
-const clientPort = process.env.CLIENT_PORT || 8080;
 app.use(cors({
   credentials: true,
-  origin: `http://${clientHost}:${clientPort}`
 }));
 
 app.use(express.json());
@@ -60,13 +57,14 @@ app.get('/', (_req, res) => {
   res.status(200).send('OK');
 });
 
+app.route('/*')
+  .get(function(req, res) {
+    res.sendFile(path.join(path.join(__dirname, '../dist/index.html')));
+  });
+
 const httpServer = require('http').createServer(app);
 
-const io = require('socket.io')(httpServer, {
-  cors: {
-    origin: `http://${clientHost}:${clientPort}`,
-  }
-});
+const io = require('socket.io')(httpServer);
 
 io.on('connection', (socket) => {
   console.log(`New socket connection: ${socket.id}`);
@@ -94,10 +92,14 @@ io.on('connection', (socket) => {
     console.log('Added post');
     io.emit('postAdded', post);
   });
+
+  socket.on('voted', (postId) => {
+    console.log('Voted');
+    io.emit('votedOnPost', postId);
+  });
 });
 
-const host = process.env.HOST || 'localhost';
 const port = process.env.PORT || 5000;
 httpServer.listen(port, () => {
-  console.log(`API server listening at http://${host}:${port}`);
+  console.log(`API server listening at port ${port}`);
 });
